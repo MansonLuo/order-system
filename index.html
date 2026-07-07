@@ -1063,47 +1063,90 @@
 
         // 2. 菜品结构及单位定义
         const MENU_DATA = [
-            {
-                category: "饮料",
+            
+           {
+                category: "鸡肉",
                 items: [
-                    { id: "drink1", name: "可口可乐", price: 3, unit: "瓶" },
-                    { id: "drink2", name: "雪碧", price: 3, unit: "瓶" },
-                    { id: "drink3", name: "冰红茶", price: 3.5, unit: "瓶" },
-                    { id: "drink4", name: "椰树牌椰汁", price: 5, unit: "盒" },
-                    { id: "drink5", name: "加多宝", price: 4, unit: "罐" }
+                    { id: "ji1", name: "鸡胗", price: 6, unit: "串" },
+                    { id: "ji2", name: "奥尔良鸡翅", price: 18, unit: "串" },
+                    { id: "ji3", name: "鸡翅尖", price: 6, unit: "串" },
+                    {"id":"ji4", name:"鸡肉小串",price:15,unit:"把"},
                 ]
-            },
-            {
-                category: "酒水",
-                items: [
-                    { id: "beer1", name: "青岛啤酒", price: 8, unit: "瓶" },
-                    { id: "beer2", name: "百威啤酒", price: 10, unit: "瓶" },
-                    { id: "beer3", name: "雪花啤酒", price: 6, unit: "瓶" }
-                ]
-            },
-            {
+            }, 
+           {
                 category: "肉类",
                 items: [
-                    { id: "meat1", name: "特色烤肉串", price: 4, unit: "串" },
-                    { id: "meat2", name: "酱爆牛肉", price: 48, unit: "盘" },
-                    { id: "meat3", name: "红烧排骨", price: 52, unit: "盘" },
-                    { id: "meat5", name: "招牌烤香肠", price: 5, unit: "根" }
+                    { id: "rou1", name: "牛肉串", price: 10, unit: "串" },
+                    { id: "rou2", name: "羊肉串", price: 10, unit: "串" },
+                    { id: "rou3", name: "五花肉串", price: 5, unit: "串" }，
+                    {"id":"rou4", name:"烤肉肠",price:6,unit:"根"},
+                    {"id":"rou5", name:"鸡烤火腿肠",price:5,unit:"根"},
+                    {"id":"rou6", name:"骨肉相连",price:8,unit:"串"},
+                    {"id":"rou7", name:"小腊肠",price:10,unit:"把"},
                 ]
             },
-            {
+           {
                 category: "海鲜",
                 items: [
-                    { id: "sea1", name: "蒜蓉粉丝蒸扇贝", price: 12, unit: "只" },
-                    { id: "sea2", name: "香辣虾", price: 58, unit: "锅" },
-                    { id: "sea3", name: "清蒸鲈鱼", price: 68, unit: "条" }
+                    { id: "sea1", name: "对虾", price: 6, unit: "串" },
+                    { id: "sea2", name: "烤鲫鱼", price: 
+30, unit: "条" },
+                    { id: "sea3", name: "烤生蚝", price: 10, unit: "个" }，
+                    {"id":"sea4", name:"锡纸花甲粉",price:25,unit:"份"},
                 ]
             },
-            {
-                category: "蔬菜",
+           {
+                category: "素类",
                 items: [
-                    { id: "veg1", name: "清炒菜心", price: 18, unit: "盘" },
-                    { id: "veg2", name: "手撕包菜", price: 16, unit: "盘" },
-                    { id: "veg3", name: "干煸四季豆", price: 22, unit: "盘" }
+                    { id: "su1", name: "玉米串", price: 10, unit: "把" },
+                    { id: "su2", name: "小馒头", price: 5, unit: "串" },
+                    { id: "su3", name: "烤年糕", price: 6, unit: "串" }，
+                    {"id":"su4", name:"土豆片",price:18,unit:"份"},
+                    {"id":"su5", name:"烤花菜",price:18,unit:"份"},
+                    {"id":"su6", name:"烤香菇",price:18,unit:"份"},
+                    {"id":"su7", name:"烤青椒",price:18,unit:"份"},
+                    {"id":"su8", name:"烤茄子",price:25,unit:"份"},
+                    {"id":"su9", name:"锡纸娃娃菜",price:18,unit:"份"},
+                    {"id":"su10", name:"锡纸金针菇",price:18,unit:"份"},
+                ]
+            },
+          {
+                category: "酒",
+                items: [
+                    { id: "jiu1", name: "百威500ml", price: 12, unit: "瓶" },
+                    { id: "jiu2", name: "扎啤", price: 88, unit: "扎" },
+                    { id: "jiu3", name: "扎啤", price: 18, unit: "杯" }，
+                    {"id":"jiu4", name:"冰条",price:10,unit:"根"},
+                ]
+            },
+          {
+                category: "水",
+                items: [
+                    { id: "wt1", name: "海之言", price: 10, unit: "瓶" },
+                    { id: "wt2", name: "娃哈哈苏打水", price: 10, unit: "瓶" },
+                    { id: "wt3", name: "农夫山泉", price: 5, unit: "瓶" },
+                ]
+            },
+           {
+                category: "饮料",
+                items: [
+                    { id: "yl1", name: "果汁", price: 10, unit: "杯" },
+                    { id: "yl2", name: "椰子", price: 20, unit: "个" },
+                    { id: "yl3", name: "王老吉", price: 10, unit: "听" }，
+                    {"id":"yl4", name:"雪碧",price:10,unit:"听"},
+                    {"id":"yl5", name:"椰子汁",price:10,unit:"听"},
+                    {"id":"yl6", name:"可乐",price:10,unit:"听"},
+                ]
+            },
+{
+                category: "茶饮",
+                items: [
+                    { id: "cha1", name: "冰红茶", price: 10, unit: "瓶" },
+                    { id: "cha2", name: "阿萨姆", price: 10, unit: "瓶" },
+                    { id: "cha3", name: "柠檬红茶", price: 10, unit: "瓶" }，
+                    {"id":"cha4", name:"桃桃乌龙茶",price:10,unit:"瓶"},
+                    {"id":"cha5", name:"三得利乌龙茶",price:10,unit:"瓶"},
+                    {"id":"cha6", name:"东方树叶",price:10,unit:"瓶"},
                 ]
             }
         ];
