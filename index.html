@@ -4,7 +4,7 @@
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
     <title>极简餐饮管理系统</title>
-    <!-- Lucide 图标 -->
+    <!-- Lucide 图标库 -->
     <script src="https://unpkg.com/lucide@latest"></script>
     <style>
         /* -----------------------------------------
@@ -735,7 +735,7 @@
             opacity: 1;
         }
 
-        /* 10. 管理员密码验证弹窗专用样式 */
+        /* 10. ⚠️ 完美居中的弹窗框架 (支持清空确认、导出数据) */
         .center-modal {
             position: fixed;
             inset: 0;
@@ -750,24 +750,26 @@
         .center-modal-content {
             background-color: #ffffff;
             width: 100%;
-            max-width: 320px;
+            max-width: 340px;
             border-radius: 20px;
-            padding: 20px;
+            padding: 24px;
+            box-shadow: 0 20px 25px -5px rgba(0, 0, 0, 0.1), 0 10px 10px -5px rgba(0, 0, 0, 0.04);
             transform: scale(0.95);
-            transition: transform 0.2s ease;
+            transition: transform 0.2s cubic-bezier(0.16, 1, 0.3, 1);
+            display: flex;
+            flex-direction: column;
+            gap: 16px;
         }
         .pwd-title-wrap {
             display: flex;
             align-items: center;
             gap: 8px;
             color: #ef4444;
-            margin-bottom: 8px;
         }
         .pwd-desc {
             font-size: 12px;
             color: #64748b;
             line-height: 1.5;
-            margin-bottom: 14px;
         }
         .pwd-input {
             width: 100%;
@@ -779,7 +781,6 @@
             color: #0f172a;
             text-align: center;
             outline: none;
-            margin-bottom: 16px;
             transition: border-color 0.2s;
         }
         .pwd-input:focus {
@@ -807,17 +808,26 @@
             color: #ffffff;
         }
 
-        /* 11. 飞入购物车粒子样式 */
+        /* 11. ⚠️ 抛物线飞入购物车粒子样式 (加大、加慢且带金光特效) */
         .fly-particle {
             position: fixed;
             background-color: #f59e0b;
             border-radius: 50%;
             z-index: 9999;
             pointer-events: none;
-            transition: transform 0.6s cubic-bezier(0.1, 0.8, 0.25, 1), 
-                        left 0.6s linear, 
-                        top 0.6s cubic-bezier(0.5, -0.5, 1, 1), 
-                        opacity 0.6s ease;
+            box-shadow: 0 0 12px rgba(245, 158, 11, 0.8), 0 0 4px rgba(251, 191, 36, 0.5);
+            transition: transform 0.9s cubic-bezier(0.1, 0.8, 0.25, 1), 
+                        left 0.9s linear, 
+                        top 0.9s cubic-bezier(0.5, -0.5, 1, 1), 
+                        opacity 0.9s ease;
+        }
+
+        @keyframes bounce-cart {
+            0%, 100% { transform: scale(1); }
+            50% { transform: scale(1.2); }
+        }
+        .cart-bounce {
+            animation: bounce-cart 0.3s ease-out;
         }
     </style>
 </head>
@@ -880,7 +890,7 @@
             </nav>
         </div>
         <div class="drawer-footer">
-            极简餐饮系统 v1.4.0
+            极简餐饮系统 v1.4.5
         </div>
     </aside>
 
@@ -1004,23 +1014,23 @@
         </div>
     </div>
 
-    <!-- 弹窗：导出数据 -->
-    <div id="export-modal" onclick="handleOutsideClick(event, 'export-modal', () => toggleExportModal(false))" class="modal" style="align-items: center; padding: 16px;">
-        <div id="export-modal-content" class="modal-content" style="max-width: 320px; border-radius: 20px; padding: 20px;">
-            <div style="display: flex; align-items: center; justify-content: space-between; margin-bottom: 12px;">
-                <h4 style="font-size: 14px; font-weight: 800; color: #0f172a;">导出的统计文本</h4>
+    <!-- 弹窗：⚠️ 始终完美居中的导出数据面板 -->
+    <div id="export-modal" onclick="handleOutsideClick(event, 'export-modal', () => toggleExportModal(false))" class="center-modal">
+        <div id="export-modal-content" class="center-modal-content">
+            <div style="display: flex; align-items: center; justify-content: space-between;">
+                <h4 style="font-size: 15px; font-weight: 800; color: #0f172a;">导出的统计文本</h4>
                 <button onclick="toggleExportModal(false)" class="close-btn">
                     <i data-lucide="x" style="width: 16px; height: 16px;"></i>
                 </button>
             </div>
-            <textarea id="export-text-area" readonly style="width: 100%; height: 160px; background-color: #f8fafc; border: 1px solid #e2e8f0; border-radius: 12px; padding: 10px; font-size: 12px; font-family: monospace; color: #334155; outline: none; resize: none; margin-bottom: 14px;"></textarea>
+            <textarea id="export-text-area" readonly style="width: 100%; height: 160px; background-color: #f8fafc; border: 1px solid #e2e8f0; border-radius: 12px; padding: 12px; font-size: 12px; font-family: monospace; color: #334155; outline: none; resize: none;"></textarea>
             <button onclick="copyExportText()" style="width: 100%; background-color: #0f172a; color: #ffffff; border: none; border-radius: 12px; padding: 12px; font-size: 13px; font-weight: 700; cursor: pointer;" class="tap-feedback">
                 复制全部文本
             </button>
         </div>
     </div>
 
-    <!-- 弹窗：清空历史密码输入验证弹窗 -->
+    <!-- 弹窗：清空历史密码输入验证弹窗 (始终完美居中) -->
     <div id="password-modal" onclick="handleOutsideClick(event, 'password-modal', () => togglePasswordModal(false))" class="center-modal">
         <div id="password-modal-content" class="center-modal-content">
             <div class="pwd-title-wrap">
@@ -1290,14 +1300,14 @@
                     void qtyElement.offsetWidth; 
                     qtyElement.classList.add("pop-active");
                     
-                    // 抛物线飞入
+                    // 飞入购物车粒子过渡
                     createFlyingBubble(event);
                 }
             }
             updateFloatingCart();
         }
 
-        // 3D抛物线算法
+        // ⚠️ 慢速、大尺寸、发光的 3D 抛物线飞入算法
         function createFlyingBubble(e) {
             const button = e.currentTarget;
             const btnRect = button.getBoundingClientRect();
@@ -1306,18 +1316,20 @@
 
             const bubble = document.createElement("div");
             bubble.className = "fly-particle";
-            bubble.style.width = "14px";
-            bubble.style.height = "14px";
-            bubble.style.left = `${btnRect.left + btnRect.width / 2 - 7}px`;
-            bubble.style.top = `${btnRect.top + btnRect.height / 2 - 7}px`;
+            // 粒子放大为 24px * 24px
+            bubble.style.width = "24px";
+            bubble.style.height = "24px";
+            bubble.style.left = `${btnRect.left + btnRect.width / 2 - 12}px`;
+            bubble.style.top = `${btnRect.top + btnRect.height / 2 - 12}px`;
             document.body.appendChild(bubble);
 
+            // 触发更缓慢、优美的抛物位移
             setTimeout(() => {
-                const targetX = cartRect.left + cartRect.width / 2 - 7;
-                const targetY = cartRect.top + cartRect.height / 2 - 7;
+                const targetX = cartRect.left + cartRect.width / 2 - 12;
+                const targetY = cartRect.top + cartRect.height / 2 - 12;
                 
-                bubble.style.transform = `translate(${targetX - (btnRect.left + btnRect.width / 2 - 7)}px, ${targetY - (btnRect.top + btnRect.height / 2 - 7)}px) scale(0.2)`;
-                bubble.style.opacity = "0.2";
+                bubble.style.transform = `translate(${targetX - (btnRect.left + btnRect.width / 2 - 12)}px, ${targetY - (btnRect.top + btnRect.height / 2 - 12)}px) scale(0.3)`;
+                bubble.style.opacity = "0.15";
             }, 20);
 
             bubble.addEventListener("transitionend", () => {
@@ -1413,7 +1425,7 @@
         function submitOrder() {
             const tableNo = document.getElementById("table-number-input").value.trim();
             if (!tableNo || !isTableLocked) {
-                showToast("⚠️ 请先确定并锁死桌号！");
+                showToast("⚠️ 请先确定并锁餐桌号！");
                 return;
             }
 
@@ -1703,7 +1715,7 @@
             lucide.createIcons();
         }
 
-        // --- 4. 密码保护的清空历史模块 ---
+        // --- 4. 密码保护的清空历史模块 (完美居中控制) ---
         function clearAllHistory() {
             togglePasswordModal(true);
         }
@@ -1735,7 +1747,7 @@
             }
         }
 
-        // --- 5. 统计及带单位导出模块 ---
+        // --- 5. 统计及带单位导出模块 (完美居中控制) ---
         function renderStatsPage() {
             const totalRevenue = historyOrders.reduce((sum, o) => sum + parseFloat(calcOrderTotal(o)), 0).toFixed(1);
             document.getElementById("stats-total-revenue").innerText = `¥${totalRevenue}`;
@@ -1802,13 +1814,24 @@
 
             const outputText = outputLines.join("\n");
             document.getElementById("export-text-area").value = outputText || "暂无历史销量数据";
-            document.getElementById("export-modal").style.display = "flex";
+            
+            // ⚠️ 居中控制显示
+            const modal = document.getElementById("export-modal");
+            const content = document.getElementById("export-modal-content");
+            modal.style.display = "flex";
+            setTimeout(() => content.style.transform = "scale(1)", 10);
         }
 
         function toggleExportModal(show) {
             const modal = document.getElementById("export-modal");
-            if (show) modal.style.display = "flex";
-            else modal.style.display = "none";
+            const content = document.getElementById("export-modal-content");
+            if (show) {
+                modal.style.display = "flex";
+                setTimeout(() => content.style.transform = "scale(1)", 10);
+            } else {
+                content.style.transform = "scale(0.95)";
+                setTimeout(() => modal.style.display = "none", 200);
+            }
         }
 
         function copyExportText() {
