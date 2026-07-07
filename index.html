@@ -1,4 +1,3 @@
-```html
 <!DOCTYPE html>
 <html lang="zh-CN">
 <head>
@@ -6,9 +5,9 @@
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
     <title>极简餐饮管理系统</title>
     <!-- Tailwind CSS CDN -->
-    <script src="https://cdn.tailwindcss.com"></script>
+    <script src="[https://cdn.tailwindcss.com](https://cdn.tailwindcss.com)"></script>
     <!-- Lucide Icons -->
-    <script src="https://unpkg.com/lucide@latest"></script>
+    <script src="[https://unpkg.com/lucide@latest](https://unpkg.com/lucide@latest)"></script>
     <style>
         /* 隐藏滚动条但保留滚动功能 */
         .no-scrollbar::-webkit-scrollbar {
@@ -31,6 +30,14 @@
         }
         .pop-active {
             animation: pop 0.2s ease-out;
+        }
+        /* 购物车弹性跳动动画 */
+        @keyframes bounce-cart {
+            0%, 100% { transform: scale(1); }
+            50% { transform: scale(1.15); }
+        }
+        .cart-bounce {
+            animation: bounce-cart 0.3s ease-out;
         }
     </style>
 </head>
@@ -89,7 +96,7 @@
             </nav>
         </div>
         <div class="p-4 border-t border-slate-100 text-center text-xs text-slate-400">
-            极简餐饮系统 v1.2.0
+            极简餐饮系统 v1.3.0
         </div>
     </aside>
 
@@ -236,20 +243,21 @@
         </div>
     </div>
 
-    <!-- 自定义确认弹窗 (取代不美观的原生 confirm 弹窗) -->
-    <div id="confirm-modal" onclick="handleOutsideClick(event, 'confirm-modal', () => toggleConfirmModal(false))" class="fixed inset-0 z-50 bg-slate-900/40 backdrop-blur-sm hidden flex items-center justify-center p-4">
-        <div id="confirm-modal-content" class="bg-white w-full max-w-xs rounded-2xl shadow-xl p-5 space-y-4 flex flex-col transform scale-95 transition-transform duration-200">
+    <!-- 弹窗：清空历史密码输入验证弹窗 -->
+    <div id="password-modal" onclick="handleOutsideClick(event, 'password-modal', () => togglePasswordModal(false))" class="fixed inset-0 z-50 bg-slate-900/40 backdrop-blur-sm hidden flex items-center justify-center p-4">
+        <div id="password-modal-content" class="bg-white w-full max-w-xs rounded-2xl shadow-xl p-5 space-y-4 flex flex-col transform scale-95 transition-transform duration-200">
             <div class="flex items-center gap-2 text-rose-600">
-                <i data-lucide="alert-triangle" class="w-5 h-5"></i>
-                <h4 class="font-bold text-slate-900 text-sm">确认清空？</h4>
+                <i data-lucide="shield-alert" class="w-5 h-5"></i>
+                <h4 class="font-bold text-slate-900 text-sm">安全验证</h4>
             </div>
-            <p class="text-xs text-slate-500 leading-relaxed">确定要清空全部的历史菜单记录吗？此操作将永久抹除本地缓存，通常用于第二天开业前的归零。</p>
-            <div class="flex gap-2 pt-2">
-                <button onclick="toggleConfirmModal(false)" class="flex-1 bg-slate-100 hover:bg-slate-200 text-slate-700 rounded-xl py-2.5 text-xs font-semibold tap-feedback">
+            <p class="text-xs text-slate-500 leading-relaxed">清空历史数据是不可逆的操作。请输入管理密码进行确认：</p>
+            <input id="admin-password-input" type="password" placeholder="请输入管理员密码" class="w-full bg-slate-50 border border-slate-200 rounded-xl py-2 px-3 text-sm text-slate-800 text-center focus:outline-none focus:border-rose-500 transition-all">
+            <div class="flex gap-2 pt-1">
+                <button onclick="togglePasswordModal(false)" class="flex-1 bg-slate-100 hover:bg-slate-200 text-slate-700 rounded-xl py-2.5 text-xs font-semibold tap-feedback">
                     取消
                 </button>
-                <button onclick="executeClearHistory()" class="flex-1 bg-rose-500 hover:bg-rose-600 text-white rounded-xl py-2.5 text-xs font-semibold tap-feedback">
-                    确定
+                <button onclick="verifyAndClearHistory()" class="flex-1 bg-rose-500 hover:bg-rose-600 text-white rounded-xl py-2.5 text-xs font-semibold tap-feedback">
+                    验证并清空
                 </button>
             </div>
         </div>
@@ -262,54 +270,65 @@
     </div>
 
     <script>
-        // --- 静态菜品数据库 ---
+        // ==========================================
+        //  配置区域 CONFIGURATION BLOCK
+        //  (在这里配置或修改您店里的菜品及密码)
+        // ==========================================
+        
+        // 1. 管理员授权清空数据密码
+        const ADMIN_PASSWORD = "888"; 
+
+        // 2. 菜品结构及单位定义
         const MENU_DATA = [
             {
                 category: "饮料",
                 items: [
-                    { id: "drink1", name: "可口可乐", price: 3 },
-                    { id: "drink2", name: "雪碧", price: 3 },
-                    { id: "drink3", name: "冰红茶", price: 3.5 },
-                    { id: "drink4", name: "椰树牌椰汁", price: 5 },
-                    { id: "drink5", name: "加多宝", price: 4 }
+                    { id: "drink1", name: "可口可乐", price: 3, unit: "瓶" },
+                    { id: "drink2", name: "雪碧", price: 3, unit: "瓶" },
+                    { id: "drink3", name: "冰红茶", price: 3.5, unit: "瓶" },
+                    { id: "drink4", name: "椰树牌椰汁", price: 5, unit: "盒" },
+                    { id: "drink5", name: "加多宝", price: 4, unit: "罐" }
                 ]
             },
             {
                 category: "酒水",
                 items: [
-                    { id: "beer1", name: "青岛啤酒", price: 8 },
-                    { id: "beer2", name: "百威啤酒", price: 10 },
-                    { id: "beer3", name: "雪花啤酒", price: 6 }
+                    { id: "beer1", name: "青岛啤酒", price: 8, unit: "瓶" },
+                    { id: "beer2", name: "百威啤酒", price: 10, unit: "瓶" },
+                    { id: "beer3", name: "雪花啤酒", price: 6, unit: "瓶" }
                 ]
             },
             {
                 category: "肉类",
                 items: [
-                    { id: "meat1", name: "特色烤肉串", price: 4 },
-                    { id: "meat2", name: "酱爆牛肉", price: 48 },
-                    { id: "meat3", name: "红烧排骨", price: 52 },
-                    { id: "meat5", name: "招牌烤香肠", price: 5 }
+                    { id: "meat1", name: "特色烤肉串", price: 4, unit: "串" },
+                    { id: "meat2", name: "酱爆牛肉", price: 48, unit: "盘" },
+                    { id: "meat3", name: "红烧排骨", price: 52, unit: "盘" },
+                    { id: "meat5", name: "招牌烤香肠", price: 5, unit: "根" }
                 ]
             },
             {
                 category: "海鲜",
                 items: [
-                    { id: "sea1", name: "蒜蓉粉丝蒸扇贝", price: 12 },
-                    { id: "sea2", name: "香辣虾", price: 58 },
-                    { id: "sea3", name: "清蒸鲈鱼", price: 68 }
+                    { id: "sea1", name: "蒜蓉粉丝蒸扇贝", price: 12, unit: "只" },
+                    { id: "sea2", name: "香辣虾", price: 58, unit: "锅" },
+                    { id: "sea3", name: "清蒸鲈鱼", price: 68, unit: "条" }
                 ]
             },
             {
                 category: "蔬菜",
                 items: [
-                    { id: "veg1", name: "清炒菜心", price: 18 },
-                    { id: "veg2", name: "手撕包菜", price: 16 },
-                    { id: "veg3", name: "干煸四季豆", price: 22 }
+                    { id: "veg1", name: "清炒菜心", price: 18, unit: "盘" },
+                    { id: "veg2", name: "手撕包菜", price: 16, unit: "盘" },
+                    { id: "veg3", name: "干煸四季豆", price: 22, unit: "盘" }
                 ]
             }
         ];
 
-        // --- 全局状态 ---
+        // ==========================================
+        //  业务逻辑代码 CORE CODE (无需轻易修改)
+        // ==========================================
+
         let currentCart = {}; 
         let isTableLocked = false;
         let activeOrders = JSON.parse(localStorage.getItem("kitchen_active_orders")) || []; 
@@ -340,14 +359,13 @@
             }, 2000);
         }
 
-        // --- 外部点击关闭弹窗控制 ---
         function handleOutsideClick(event, modalId, closeCallback) {
             if (event.target.id === modalId) {
                 closeCallback();
             }
         }
 
-        // --- 桌号锁死逻辑 ---
+        // --- 桌号锁死 ---
         function toggleLockTable() {
             const input = document.getElementById("table-number-input");
             const btn = document.getElementById("lock-table-btn");
@@ -375,7 +393,7 @@
             lucide.createIcons();
         }
 
-        // --- 抽屉导航控制 ---
+        // --- 抽屉导航 ---
         const menuBtn = document.getElementById("menu-btn");
         const closeDrawerBtn = document.getElementById("close-drawer-btn");
         const drawer = document.getElementById("drawer");
@@ -401,18 +419,16 @@
         closeDrawerBtn.addEventListener("click", closeDrawer);
         overlay.addEventListener("click", closeDrawer);
 
-        // --- 页面切换（彻底隔离购物车） ---
+        // --- 切换页面（完美隔离购物车按钮） ---
         function switchPage(pageId) {
             closeDrawer();
 
-            // 隐藏所有页面
             document.getElementById("page-order").classList.add("hidden");
             document.getElementById("page-kitchen").classList.add("hidden");
             document.getElementById("page-history").classList.add("hidden");
             document.getElementById("page-stats").classList.add("hidden");
             document.getElementById(`page-${pageId}`).classList.remove("hidden");
 
-            // 更新菜单侧边栏高亮
             document.querySelectorAll(".nav-item").forEach(btn => {
                 btn.classList.remove("bg-amber-50", "text-amber-600");
                 btn.classList.add("text-slate-600", "hover:bg-slate-50");
@@ -426,7 +442,7 @@
             const titleMap = { 'order': '点菜开单', 'kitchen': '菜台监控', 'history': '历史结账', 'stats': '数据统计' };
             document.getElementById("page-title").innerText = titleMap[pageId];
 
-            // ⚠️ 隔离购物车按钮：采用强制 display 控制，杜绝其余页面露出
+            // ⚠️ 隔离购物车悬浮按钮
             const cartContainer = document.getElementById("cart-float-btn");
             if (pageId === 'order') {
                 cartContainer.style.display = 'block';
@@ -434,7 +450,6 @@
                 cartContainer.style.display = 'none';
             }
 
-            // 动态处理右侧顶栏的清空历史按钮
             const headerAction = document.getElementById("header-action-container");
             headerAction.innerHTML = "";
             if (pageId === 'history') {
@@ -445,7 +460,6 @@
                 `;
             }
 
-            // 触发各子页面数据渲染
             if (pageId === 'kitchen') renderKitchenPage();
             else if (pageId === 'history') renderHistoryPage();
             else if (pageId === 'stats') renderStatsPage();
@@ -477,14 +491,14 @@
                     card.innerHTML = `
                         <div class="space-y-1">
                             <h4 class="font-bold text-slate-800 text-sm leading-snug break-words line-clamp-2">${item.name}</h4>
-                            <p class="text-xs text-amber-600 font-extrabold">¥${item.price}</p>
+                            <p class="text-xs text-amber-600 font-extrabold">¥${item.price}/${item.unit}</p>
                         </div>
                         <div class="flex items-center justify-between mt-auto">
-                            <button onclick="changeQty('${item.id}', -1)" class="w-7 h-7 rounded-lg bg-slate-50 border border-slate-200 text-slate-500 flex items-center justify-center tap-feedback">
+                            <button onclick="changeQty('${item.id}', -1, event)" class="w-7 h-7 rounded-lg bg-slate-50 border border-slate-200 text-slate-500 flex items-center justify-center tap-feedback">
                                 <i data-lucide="minus" class="w-3.5 h-3.5"></i>
                             </button>
                             <span id="qty-${item.id}" class="text-xs font-bold text-slate-700">0</span>
-                            <button onclick="changeQty('${item.id}', 1)" class="w-7 h-7 rounded-lg bg-amber-500 text-white flex items-center justify-center shadow-md shadow-amber-500/15 tap-feedback">
+                            <button onclick="changeQty('${item.id}', 1, event)" class="w-7 h-7 rounded-lg bg-amber-500 text-white flex items-center justify-center shadow-md shadow-amber-500/15 tap-feedback">
                                 <i data-lucide="plus" class="w-3.5 h-3.5"></i>
                             </button>
                         </div>
@@ -497,7 +511,8 @@
             });
         }
 
-        function changeQty(itemId, val) {
+        // 数量控制并触发飞入动画
+        function changeQty(itemId, val, event) {
             const currentQty = currentCart[itemId] || 0;
             const newQty = Math.max(0, currentQty + val);
             
@@ -507,14 +522,50 @@
             const qtyElement = document.getElementById(`qty-${itemId}`);
             if (qtyElement) {
                 qtyElement.innerText = newQty;
-                // 点加号触动弹性动画
                 if (val > 0) {
                     qtyElement.classList.remove("pop-active");
                     void qtyElement.offsetWidth; 
                     qtyElement.classList.add("pop-active");
+                    
+                    // ⚠️ 点击加号触发飞入购物车华丽微动效
+                    createFlyingBubble(event);
                 }
             }
             updateFloatingCart();
+        }
+
+        // 飞入购物车粒子特效
+        function createFlyingBubble(e) {
+            const button = e.currentTarget;
+            const btnRect = button.getBoundingClientRect();
+            const cartBtn = document.getElementById("cart-float-btn");
+            const cartRect = cartBtn.getBoundingClientRect();
+
+            // 生成空中滑翔的小粒子
+            const bubble = document.createElement("div");
+            bubble.className = "fixed bg-amber-500 rounded-full z-50 pointer-events-none transition-all duration-500 cubic-bezier(0.25, 1, 0.5, 1)";
+            bubble.style.width = "14px";
+            bubble.style.height = "14px";
+            bubble.style.left = `${btnRect.left + btnRect.width / 2 - 7}px`;
+            bubble.style.top = `${btnRect.top + btnRect.height / 2 - 7}px`;
+            document.body.appendChild(bubble);
+
+            // 触发位移
+            setTimeout(() => {
+                bubble.style.left = `${cartRect.left + cartRect.width / 2 - 7}px`;
+                bubble.style.top = `${cartRect.top + cartRect.height / 2 - 7}px`;
+                bubble.style.transform = "scale(0.1)";
+                bubble.style.opacity = "0";
+            }, 20);
+
+            // 动画完成收尾
+            bubble.addEventListener("transitionend", () => {
+                bubble.remove();
+                // 购物车弹跳反馈
+                cartBtn.classList.remove("cart-bounce");
+                void cartBtn.offsetWidth;
+                cartBtn.classList.add("cart-bounce");
+            });
         }
 
         function getItemDetails(itemId) {
@@ -581,13 +632,13 @@
                     div.innerHTML = `
                         <div class="space-y-0.5">
                             <h4 class="text-sm font-bold text-slate-800">${item.name}</h4>
-                            <p class="text-xs text-slate-400">单价 ¥${item.price}</p>
+                            <p class="text-xs text-slate-400">单价 ¥${item.price} / ${item.unit}</p>
                         </div>
                         <div class="flex items-center gap-3">
                             <div class="flex items-center gap-2">
-                                <button onclick="changeQty('${itemId}', -1); renderCartModalItems();" class="w-6 h-6 rounded bg-slate-100 text-slate-500 flex items-center justify-center tap-feedback"><i data-lucide="minus" class="w-3 h-3"></i></button>
+                                <button onclick="changeQty('${itemId}', -1, event); renderCartModalItems();" class="w-6 h-6 rounded bg-slate-100 text-slate-500 flex items-center justify-center tap-feedback"><i data-lucide="minus" class="w-3 h-3"></i></button>
                                 <span class="text-xs font-bold w-4 text-center">${qty}</span>
-                                <button onclick="changeQty('${itemId}', 1); renderCartModalItems();" class="w-6 h-6 rounded bg-amber-500 text-white flex items-center justify-center tap-feedback"><i data-lucide="plus" class="w-3 h-3"></i></button>
+                                <button onclick="changeQty('${itemId}', 1, event); renderCartModalItems();" class="w-6 h-6 rounded bg-amber-500 text-white flex items-center justify-center tap-feedback"><i data-lucide="plus" class="w-3 h-3"></i></button>
                             </div>
                             <span class="text-sm font-extrabold text-slate-700 min-w-[50px] text-right">¥${subtotal}</span>
                         </div>
@@ -615,7 +666,7 @@
             const orderId = "order_" + Date.now();
             const orderItems = cartKeys.map(itemId => {
                 const original = getItemDetails(itemId);
-                return { id: itemId, name: original.name, price: original.price, qty: currentCart[itemId], status: 'cooking' };
+                return { id: itemId, name: original.name, price: original.price, qty: currentCart[itemId], unit: original.unit, status: 'cooking' };
             });
 
             activeOrders.push({
@@ -626,7 +677,7 @@
                 billed: false
             });
 
-            // 解锁并重置输入
+            // 解锁并重置状态
             currentCart = {};
             isTableLocked = false;
             const input = document.getElementById("table-number-input");
@@ -643,9 +694,8 @@
             saveState();
             updateFloatingCart();
             toggleCartModal(false);
-            showToast("🎉 下单成功！已切换到菜台");
+            showToast("🎉 下单成功！已自动转至菜台");
 
-            // 延迟切页防止弹窗动画卡顿
             setTimeout(() => { switchPage('kitchen'); }, 250);
         }
 
@@ -770,7 +820,7 @@
                             <span class="font-bold text-sm ${statusClasses}">${item.name}</span>
                             ${statusBadge}
                         </div>
-                        <p class="text-xs text-slate-400">单价 ¥${item.price} / 数量 ${item.qty}</p>
+                        <p class="text-xs text-slate-400">单价 ¥${item.price} / 数量 ${item.qty} ${item.unit}</p>
                     </div>
                     <div class="flex items-center gap-2">
                         ${(isKitchen && item.status === 'cooking') ? `
@@ -880,15 +930,17 @@
             lucide.createIcons();
         }
 
-        // --- 历史数据清空逻辑（采用符合无 alert 原则的自定义弹窗） ---
+        // --- 4. 密码保护的清空历史模块 ---
         function clearAllHistory() {
-            toggleConfirmModal(true);
+            togglePasswordModal(true);
         }
 
-        function toggleConfirmModal(show) {
-            const modal = document.getElementById("confirm-modal");
-            const content = document.getElementById("confirm-modal-content");
+        function togglePasswordModal(show) {
+            const modal = document.getElementById("password-modal");
+            const content = document.getElementById("password-modal-content");
+            const input = document.getElementById("admin-password-input");
             if (show) {
+                input.value = "";
                 modal.classList.remove("hidden");
                 setTimeout(() => content.classList.remove("scale-95"), 10);
             } else {
@@ -897,15 +949,21 @@
             }
         }
 
-        function executeClearHistory() {
-            historyOrders = [];
-            localStorage.setItem("kitchen_history_orders", JSON.stringify([]));
-            renderHistoryPage();
-            toggleConfirmModal(false);
-            showToast("🗑️ 历史账单已全部清空！");
+        function verifyAndClearHistory() {
+            const inputVal = document.getElementById("admin-password-input").value;
+            // 验证密码（匹配配置区域变量）
+            if (inputVal === ADMIN_PASSWORD) {
+                historyOrders = [];
+                localStorage.setItem("kitchen_history_orders", JSON.stringify([]));
+                renderHistoryPage();
+                togglePasswordModal(false);
+                showToast("🗑️ 历史账单已安全抹除！");
+            } else {
+                showToast("❌ 密码错误，无权清空历史数据！");
+            }
         }
 
-        // --- 4. 统计页面模块 ---
+        // --- 5. 统计及带单位导出模块 ---
         function renderStatsPage() {
             const totalRevenue = historyOrders.reduce((sum, o) => sum + parseFloat(calcOrderTotal(o)), 0).toFixed(1);
             document.getElementById("stats-total-revenue").innerText = `¥${totalRevenue}`;
@@ -915,13 +973,15 @@
             historyOrders.forEach(order => {
                 order.items.forEach(item => {
                     if (item.status === 'canceled') return;
-                    if (!itemCounts[item.name]) itemCounts[item.name] = { qty: 0, price: item.price };
+                    if (!itemCounts[item.name]) {
+                        itemCounts[item.name] = { qty: 0, price: item.price, unit: item.unit || "份" };
+                    }
                     itemCounts[item.name].qty += item.qty;
                 });
             });
 
             const sortedItems = Object.keys(itemCounts).map(name => {
-                return { name: name, qty: itemCounts[name].qty, price: itemCounts[name].price };
+                return { name: name, qty: itemCounts[name].qty, price: itemCounts[name].price, unit: itemCounts[name].unit };
             }).sort((a, b) => b.qty - a.qty);
 
             const container = document.getElementById("stats-items-list");
@@ -939,9 +999,9 @@
                 div.innerHTML = `
                     <div class="space-y-0.5">
                         <span class="text-xs font-bold text-slate-800">${item.name}</span>
-                        <p class="text-[10px] text-slate-400">单价 ¥${item.price} / 销售额 ¥${subtotal}</p>
+                        <p class="text-[10px] text-slate-400">单价 ¥${item.price} / 累计销售额 ¥${subtotal}</p>
                     </div>
-                    <span class="bg-amber-100 text-amber-800 text-xs font-bold px-2 py-1 rounded-lg">已售 ${item.qty} 份</span>
+                    <span class="bg-amber-100 text-amber-800 text-xs font-bold px-2 py-1 rounded-lg">已售 ${item.qty} ${item.unit}</span>
                 `;
                 container.appendChild(div);
             });
@@ -952,14 +1012,20 @@
             historyOrders.forEach(order => {
                 order.items.forEach(item => {
                     if (item.status === 'canceled') return;
-                    if (!itemCounts[item.name]) itemCounts[item.name] = { qty: 0, price: item.price };
+                    if (!itemCounts[item.name]) {
+                        itemCounts[item.name] = { qty: 0, price: item.price, unit: item.unit || "份" };
+                    }
                     itemCounts[item.name].qty += item.qty;
                 });
             });
 
+            // ⚠️ 导出格式：[价格][菜名]：[数量][单位]
             let outputLines = [];
             Object.keys(itemCounts).forEach(name => {
-                outputLines.push(`${itemCounts[name].price}${name}：${itemCounts[name].qty}`);
+                const price = itemCounts[name].price;
+                const qty = itemCounts[name].qty;
+                const unit = itemCounts[name].unit;
+                outputLines.push(`${price}${name}：${qty}${unit}`);
             });
 
             const outputText = outputLines.join("\n");
@@ -978,7 +1044,7 @@
             textArea.select();
             try {
                 document.execCommand('copy');
-                showToast("📋 统计文本已成功复制到剪贴板！");
+                showToast("📋 带有单位的数据文本已成功复制！");
                 toggleExportModal(false);
             } catch (err) {
                 showToast("⚠️ 复制失败，请手动选择复制。");
@@ -998,5 +1064,3 @@
     </script>
 </body>
 </html>
-
-```
