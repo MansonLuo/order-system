@@ -4,12 +4,40 @@
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
     <title>极简餐饮管理系统</title>
-    <!-- Tailwind CSS CDN -->
-    <script src="[https://cdn.tailwindcss.com](https://cdn.tailwindcss.com)"></script>
-    <!-- Lucide Icons -->
-    <script src="[https://unpkg.com/lucide@latest](https://unpkg.com/lucide@latest)"></script>
+    <!-- Lucide 图标 -->
+    <script src="https://unpkg.com/lucide@latest"></script>
     <style>
-        /* 隐藏滚动条但保留滚动功能 */
+        /* -----------------------------------------
+           完全内联手写精美极简样式系统 (零外部CSS依赖)
+           ----------------------------------------- */
+        * {
+            box-sizing: border-box;
+            margin: 0;
+            padding: 0;
+            -webkit-tap-highlight-color: transparent;
+        }
+        body {
+            background-color: #f8fafc;
+            color: #334155;
+            font-family: -apple-system, BlinkMacSystemFont, "Segoe UI", Roboto, "Helvetica Neue", Arial, sans-serif;
+            min-height: 100vh;
+            display: flex;
+            flex-direction: column;
+            padding-bottom: 80px;
+            overflow-x: hidden;
+            user-select: none;
+            -webkit-user-select: none;
+        }
+
+        /* 统一阴影和渐变 */
+        .card-shadow {
+            box-shadow: 0 4px 12px -1px rgba(0, 0, 0, 0.03), 0 2px 4px -1px rgba(0, 0, 0, 0.02);
+        }
+        .pop-shadow {
+            box-shadow: 0 20px 25px -5px rgba(0, 0, 0, 0.1), 0 10px 10px -5px rgba(0, 0, 0, 0.04);
+        }
+
+        /* 隐藏滚动条但保留功能 */
         .no-scrollbar::-webkit-scrollbar {
             display: none;
         }
@@ -17,190 +45,939 @@
             -ms-overflow-style: none;
             scrollbar-width: none;
         }
-        /* 点击波纹/反馈效果 */
-        .tap-feedback:active {
-            transform: scale(0.96);
-            opacity: 0.9;
+
+        /* 1. 顶部导航栏 */
+        header {
+            position: sticky;
+            top: 0;
+            z-index: 40;
+            background-color: rgba(255, 255, 255, 0.95);
+            backdrop-filter: blur(8px);
+            border-bottom: 1px solid #f1f5f9;
+            padding: 14px 16px;
+            display: flex;
+            align-items: center;
+            justify-content: space-between;
+            height: 60px;
         }
-        /* 数量增加时的弹性放大动画 */
-        @keyframes pop {
-            0% { transform: scale(1); }
-            50% { transform: scale(1.3); color: #f59e0b; }
-            100% { transform: scale(1); }
+        .header-left {
+            display: flex;
+            align-items: center;
+            gap: 12px;
         }
-        .pop-active {
-            animation: pop 0.2s ease-out;
+        .menu-btn {
+            background: none;
+            border: none;
+            padding: 8px;
+            border-radius: 8px;
+            color: #475569;
+            cursor: pointer;
+            display: flex;
+            align-items: center;
+            justify-content: center;
         }
-        /* 购物车弹性跳动动画 */
-        @keyframes bounce-cart {
-            0%, 100% { transform: scale(1); }
-            50% { transform: scale(1.15); }
+        .menu-btn:active {
+            background-color: #f1f5f9;
         }
-        .cart-bounce {
-            animation: bounce-cart 0.3s ease-out;
+        .page-title {
+            font-size: 18px;
+            font-weight: 800;
+            color: #0f172a;
+            letter-spacing: -0.5px;
+        }
+
+        /* 2. 侧边抽屉 (Drawer) */
+        .drawer-overlay {
+            position: fixed;
+            inset: 0;
+            background-color: rgba(15, 23, 42, 0.5);
+            backdrop-filter: blur(4px);
+            z-index: 50;
+            display: none;
+            opacity: 0;
+            transition: opacity 0.3s ease;
+        }
+        .drawer {
+            position: fixed;
+            top: 0;
+            left: 0;
+            bottom: 0;
+            width: 280px;
+            background-color: #ffffff;
+            z-index: 51;
+            box-shadow: 25px 0 50px -12px rgba(0, 0, 0, 0.25);
+            transform: translateX(-100%);
+            transition: transform 0.3s cubic-bezier(0.16, 1, 0.3, 1);
+            display: flex;
+            flex-direction: column;
+            justify-content: space-between;
+        }
+        .drawer-header {
+            padding: 24px;
+            border-bottom: 1px solid #f1f5f9;
+            display: flex;
+            align-items: center;
+            justify-content: space-between;
+        }
+        .brand {
+            display: flex;
+            align-items: center;
+            gap: 10px;
+        }
+        .brand-icon {
+            background-color: #f59e0b;
+            color: #ffffff;
+            padding: 6px;
+            border-radius: 8px;
+            display: flex;
+            align-items: center;
+        }
+        .brand-name {
+            font-size: 18px;
+            font-weight: 800;
+            color: #0f172a;
+        }
+        .close-btn {
+            background: none;
+            border: none;
+            padding: 6px;
+            border-radius: 9999px;
+            color: #94a3b8;
+            cursor: pointer;
+        }
+        .close-btn:active {
+            background-color: #f1f5f9;
+        }
+        .drawer-nav {
+            padding: 16px;
+            display: flex;
+            flex-direction: column;
+            gap: 6px;
+            flex-grow: 1;
+        }
+        .nav-item {
+            width: 100%;
+            border: none;
+            background: none;
+            display: flex;
+            align-items: center;
+            justify-content: space-between;
+            padding: 14px 16px;
+            border-radius: 12px;
+            font-size: 14px;
+            font-weight: 600;
+            color: #475569;
+            text-align: left;
+            cursor: pointer;
+            transition: all 0.2s;
+        }
+        .nav-item-left {
+            display: flex;
+            align-items: center;
+            gap: 12px;
+        }
+        .nav-item.active {
+            background-color: #fef3c7;
+            color: #d97706;
+        }
+        .nav-item:not(.active):active {
+            background-color: #f8fafc;
+        }
+        .badge {
+            background-color: #ef4444;
+            color: #ffffff;
+            font-size: 10px;
+            font-weight: 700;
+            padding: 2px 6px;
+            border-radius: 9999px;
+        }
+        .drawer-footer {
+            padding: 16px;
+            border-top: 1px solid #f1f5f9;
+            text-align: center;
+            font-size: 11px;
+            color: #94a3b8;
+        }
+
+        /* 3. 主体内容与页面控制 */
+        main {
+            flex-grow: 1;
+            max-width: 480px;
+            width: 100%;
+            margin: 0 auto;
+            padding: 16px;
+        }
+        .page {
+            display: none;
+        }
+        .page.active {
+            display: block;
+        }
+
+        /* 4. 点菜页面设计 */
+        .table-lock-section {
+            background-color: #ffffff;
+            border: 1px solid #f1f5f9;
+            border-radius: 16px;
+            padding: 14px;
+            display: flex;
+            align-items: center;
+            justify-content: space-between;
+            gap: 12px;
+            margin-bottom: 24px;
+        }
+        .table-input-wrap {
+            display: flex;
+            align-items: center;
+            gap: 10px;
+            flex-grow: 1;
+        }
+        .table-input-wrap span {
+            font-size: 14px;
+            font-weight: 600;
+            color: #475569;
+            white-space: nowrap;
+        }
+        .table-input {
+            width: 100%;
+            background-color: #f8fafc;
+            border: 1px solid #e2e8f0;
+            border-radius: 10px;
+            padding: 10px 12px;
+            font-size: 14px;
+            font-weight: 700;
+            color: #1e293b;
+            outline: none;
+            transition: all 0.2s;
+        }
+        .table-input:focus {
+            border-color: #f59e0b;
+            background-color: #ffffff;
+        }
+        .table-input:disabled {
+            background-color: #f1f5f9;
+            color: #94a3b8;
+            border-color: #e2e8f0;
+        }
+        .lock-btn {
+            background-color: #0f172a;
+            color: #ffffff;
+            border: none;
+            border-radius: 10px;
+            padding: 10px 16px;
+            font-size: 13px;
+            font-weight: 700;
+            cursor: pointer;
+            display: flex;
+            align-items: center;
+            gap: 6px;
+            white-space: nowrap;
+        }
+        .lock-btn.locked {
+            background-color: #d97706;
+        }
+
+        /* 菜品分类区域与左右滑动卡片 */
+        .category-section {
+            margin-bottom: 24px;
+        }
+        .category-title-wrap {
+            display: flex;
+            align-items: center;
+            gap: 8px;
+            margin-bottom: 12px;
+        }
+        .category-indicator {
+            width: 4px;
+            height: 16px;
+            background-color: #f59e0b;
+            border-radius: 9999px;
+        }
+        .category-title {
+            font-size: 15px;
+            font-weight: 800;
+            color: #1e293b;
+        }
+        .dish-scroll {
+            display: flex;
+            gap: 12px;
+            overflow-x: auto;
+            padding-bottom: 6px;
+            scroll-snap-type: x mandatory;
+        }
+        .dish-card {
+            background-color: #ffffff;
+            min-width: 135px;
+            max-width: 135px;
+            height: 140px;
+            border: 1px solid #f1f5f9;
+            border-radius: 16px;
+            padding: 14px;
+            display: flex;
+            flex-direction: column;
+            justify-content: space-between;
+            scroll-snap-align: start;
+            flex-shrink: 0;
+            position: relative;
+        }
+        .dish-info h4 {
+            font-size: 13px;
+            font-weight: 800;
+            color: #1e293b;
+            line-height: 1.4;
+            display: -webkit-box;
+            -webkit-line-clamp: 2;
+            -webkit-box-orient: vertical;
+            overflow: hidden;
+            margin-bottom: 4px;
+        }
+        .dish-info p {
+            font-size: 13px;
+            font-weight: 900;
+            color: #d97706;
+        }
+        .dish-controls {
+            display: flex;
+            align-items: center;
+            justify-content: space-between;
+            margin-top: auto;
+        }
+        .qty-btn {
+            width: 28px;
+            height: 28px;
+            border-radius: 8px;
+            border: none;
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            cursor: pointer;
+            outline: none;
+        }
+        .qty-minus {
+            background-color: #f8fafc;
+            border: 1px solid #e2e8f0;
+            color: #64748b;
+        }
+        .qty-plus {
+            background-color: #f59e0b;
+            color: #ffffff;
+        }
+        .qty-num {
+            font-size: 13px;
+            font-weight: 700;
+            color: #334155;
+            min-width: 14px;
+            text-align: center;
+        }
+
+        /* 5. 悬浮购物车按钮 */
+        .cart-float-btn {
+            position: fixed;
+            bottom: 24px;
+            right: 24px;
+            z-index: 40;
+            background-color: #f59e0b;
+            color: #ffffff;
+            width: 56px;
+            height: 56px;
+            border-radius: 9999px;
+            box-shadow: 0 10px 25px -5px rgba(245, 158, 11, 0.4);
+            border: none;
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            cursor: pointer;
+            outline: none;
+        }
+        .cart-badge-dot {
+            position: absolute;
+            top: -2px;
+            right: -2px;
+            background-color: #ef4444;
+            color: #ffffff;
+            font-size: 9px;
+            font-weight: 800;
+            width: 20px;
+            height: 20px;
+            border-radius: 9999px;
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            border: 2px solid #ffffff;
+        }
+
+        /* 6. 菜台页面与历史页面卡片设计 */
+        .page-info-bar {
+            display: flex;
+            align-items: center;
+            justify-content: space-between;
+            margin-bottom: 12px;
+        }
+        .page-tip {
+            font-size: 12px;
+            color: #94a3b8;
+        }
+        .page-summary {
+            font-size: 12px;
+            font-weight: 600;
+            color: #64748b;
+        }
+        .order-card-list {
+            display: flex;
+            flex-direction: column;
+            gap: 12px;
+        }
+        .order-card {
+            background-color: #ffffff;
+            border-radius: 16px;
+            padding: 16px;
+            border: 1px solid #e2e8f0;
+            display: flex;
+            align-items: center;
+            justify-content: space-between;
+            cursor: pointer;
+            transition: all 0.2s;
+        }
+        .order-card.ready {
+            background-color: #f0fdf4;
+            border: 2px solid #22c55e;
+        }
+        .order-card-left {
+            display: flex;
+            flex-direction: column;
+            gap: 4px;
+            max-width: 70%;
+        }
+        .order-card-header {
+            display: flex;
+            align-items: center;
+            gap: 8px;
+        }
+        .order-table-title {
+            font-size: 16px;
+            font-weight: 800;
+            color: #0f172a;
+        }
+        .status-pill {
+            font-size: 10px;
+            font-weight: 700;
+            padding: 2px 6px;
+            border-radius: 6px;
+        }
+        .status-cooking {
+            background-color: #fef3c7;
+            color: #d97706;
+        }
+        .status-served {
+            background-color: #dcfce7;
+            color: #15803d;
+        }
+        .order-items-snippet {
+            font-size: 12px;
+            color: #94a3b8;
+            white-space: nowrap;
+            overflow: hidden;
+            text-overflow: ellipsis;
+        }
+        .order-time {
+            font-size: 11px;
+            color: #94a3b8;
+        }
+        .order-card-right {
+            text-align: right;
+            display: flex;
+            flex-direction: column;
+            gap: 2px;
+        }
+        .order-count {
+            font-size: 13px;
+            font-weight: 700;
+            color: #475569;
+        }
+        .order-price {
+            font-size: 15px;
+            font-weight: 900;
+            color: #15803d;
+        }
+
+        /* 7. 数据统计页面 */
+        .stats-grid {
+            display: grid;
+            grid-template-cols: 1fr 1fr;
+            gap: 12px;
+            margin-bottom: 20px;
+        }
+        .stats-box {
+            border-radius: 16px;
+            padding: 16px;
+        }
+        .stats-box-green {
+            background-color: #f0fdf4;
+            border: 1px solid #dcfce7;
+        }
+        .stats-box-indigo {
+            background-color: #e0e7ff;
+            border: 1px solid #e0e7ff;
+        }
+        .stats-label {
+            font-size: 12px;
+            font-weight: 600;
+            color: #4b5563;
+        }
+        .stats-val {
+            font-size: 22px;
+            font-weight: 900;
+            margin-top: 4px;
+        }
+        .stats-val-green { color: #166534; }
+        .stats-val-indigo { color: #3730a3; }
+
+        .rank-card {
+            background-color: #ffffff;
+            border: 1px solid #f1f5f9;
+            border-radius: 16px;
+            padding: 20px;
+        }
+        .rank-header {
+            display: flex;
+            align-items: center;
+            gap: 8px;
+            border-bottom: 1px solid #f1f5f9;
+            padding-bottom: 12px;
+            margin-bottom: 14px;
+        }
+        .rank-title {
+            font-size: 14px;
+            font-weight: 800;
+            color: #0f172a;
+        }
+        .rank-list {
+            display: flex;
+            flex-direction: column;
+            gap: 12px;
+            max-height: 320px;
+            overflow-y: auto;
+        }
+        .rank-item {
+            display: flex;
+            align-items: center;
+            justify-content: space-between;
+            padding-bottom: 10px;
+            border-bottom: 1px dashed #f1f5f9;
+        }
+        .rank-item-info h5 {
+            font-size: 13px;
+            font-weight: 700;
+            color: #1e293b;
+        }
+        .rank-item-info p {
+            font-size: 11px;
+            color: #94a3b8;
+            margin-top: 2px;
+        }
+        .rank-item-qty {
+            background-color: #fef3c7;
+            color: #b45309;
+            font-size: 12px;
+            font-weight: 700;
+            padding: 4px 8px;
+            border-radius: 8px;
+        }
+        .export-btn {
+            width: 100%;
+            background-color: #0f172a;
+            color: #ffffff;
+            border: none;
+            border-radius: 16px;
+            padding: 16px;
+            font-size: 14px;
+            font-weight: 700;
+            margin-top: 20px;
+            cursor: pointer;
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            gap: 8px;
+        }
+
+        /* 8. 精美全屏覆盖弹窗框架 */
+        .modal {
+            position: fixed;
+            inset: 0;
+            background-color: rgba(15, 23, 42, 0.4);
+            backdrop-filter: blur(4px);
+            z-index: 50;
+            display: none;
+            align-items: flex-end;
+            justify-content: center;
+        }
+        .modal-content {
+            background-color: #ffffff;
+            width: 100%;
+            max-width: 480px;
+            border-top-left-radius: 24px;
+            border-top-right-radius: 24px;
+            max-height: 85vh;
+            display: flex;
+            flex-direction: column;
+            transform: translateY(100%);
+            transition: transform 0.3s cubic-bezier(0.16, 1, 0.3, 1);
+        }
+        .modal-header {
+            padding: 20px 24px;
+            border-bottom: 1px solid #f1f5f9;
+            display: flex;
+            align-items: center;
+            justify-content: space-between;
+        }
+        .modal-title h3 {
+            font-size: 16px;
+            font-weight: 800;
+            color: #0f172a;
+        }
+        .modal-title p {
+            font-size: 12px;
+            color: #d97706;
+            margin-top: 2px;
+        }
+        .modal-body {
+            padding: 24px;
+            overflow-y: auto;
+            flex-grow: 1;
+            display: flex;
+            flex-direction: column;
+            gap: 16px;
+        }
+        .modal-footer {
+            padding: 20px 24px;
+            border-top: 1px solid #f1f5f9;
+            background-color: #f8fafc;
+            display: flex;
+            flex-direction: column;
+            gap: 12px;
+        }
+
+        /* 弹窗中的明细项样式 */
+        .modal-item {
+            display: flex;
+            align-items: center;
+            justify-content: space-between;
+            padding-bottom: 12px;
+            border-bottom: 1px solid #f8fafc;
+        }
+        .modal-item-left {
+            display: flex;
+            flex-direction: column;
+            gap: 2px;
+        }
+        .modal-item-title {
+            font-size: 14px;
+            font-weight: 700;
+            color: #1e293b;
+        }
+        .modal-item-price {
+            font-size: 12px;
+            color: #94a3b8;
+        }
+        .modal-item-right {
+            display: flex;
+            align-items: center;
+            gap: 12px;
+        }
+        .modal-item-action {
+            display: flex;
+            align-items: center;
+            gap: 6px;
+        }
+        .action-sm-btn {
+            border: none;
+            padding: 6px 12px;
+            border-radius: 8px;
+            font-size: 12px;
+            font-weight: 700;
+            cursor: pointer;
+            display: flex;
+            align-items: center;
+            gap: 4px;
+        }
+        .action-btn-green {
+            background-color: #22c55e;
+            color: #ffffff;
+        }
+        .action-btn-red {
+            background-color: #fee2e2;
+            color: #ef4444;
+        }
+
+        /* 9. 信息通知组件 (Toast) */
+        .toast {
+            position: fixed;
+            bottom: 90px;
+            left: 50%;
+            transform: translate(-50%, 10px);
+            z-index: 100;
+            background-color: #0f172a;
+            color: #ffffff;
+            font-size: 12px;
+            font-weight: 600;
+            padding: 10px 18px;
+            border-radius: 9999px;
+            pointer-events: none;
+            transition: all 0.3s ease;
+            opacity: 0;
+            display: flex;
+            align-items: center;
+            gap: 6px;
+            box-shadow: 0 10px 15px -3px rgba(0, 0, 0, 0.3);
+        }
+        .toast.show {
+            transform: translate(-50%, 0);
+            opacity: 1;
+        }
+
+        /* 10. 管理员密码验证弹窗专用样式 */
+        .center-modal {
+            position: fixed;
+            inset: 0;
+            background-color: rgba(15, 23, 42, 0.4);
+            backdrop-filter: blur(4px);
+            z-index: 50;
+            display: none;
+            align-items: center;
+            justify-content: center;
+            padding: 16px;
+        }
+        .center-modal-content {
+            background-color: #ffffff;
+            width: 100%;
+            max-width: 320px;
+            border-radius: 20px;
+            padding: 20px;
+            transform: scale(0.95);
+            transition: transform 0.2s ease;
+        }
+        .pwd-title-wrap {
+            display: flex;
+            align-items: center;
+            gap: 8px;
+            color: #ef4444;
+            margin-bottom: 8px;
+        }
+        .pwd-desc {
+            font-size: 12px;
+            color: #64748b;
+            line-height: 1.5;
+            margin-bottom: 14px;
+        }
+        .pwd-input {
+            width: 100%;
+            background-color: #f8fafc;
+            border: 1px solid #e2e8f0;
+            border-radius: 12px;
+            padding: 10px;
+            font-size: 14px;
+            color: #0f172a;
+            text-align: center;
+            outline: none;
+            margin-bottom: 16px;
+            transition: border-color 0.2s;
+        }
+        .pwd-input:focus {
+            border-color: #ef4444;
+        }
+        .btn-row {
+            display: flex;
+            gap: 8px;
+        }
+        .btn-row button {
+            flex: 1;
+            border: none;
+            padding: 10px;
+            border-radius: 12px;
+            font-size: 12px;
+            font-weight: 700;
+            cursor: pointer;
+        }
+        .btn-cancel {
+            background-color: #f1f5f9;
+            color: #475569;
+        }
+        .btn-confirm {
+            background-color: #ef4444;
+            color: #ffffff;
+        }
+
+        /* 11. 飞入购物车粒子样式 */
+        .fly-particle {
+            position: fixed;
+            background-color: #f59e0b;
+            border-radius: 50%;
+            z-index: 9999;
+            pointer-events: none;
+            transition: transform 0.6s cubic-bezier(0.1, 0.8, 0.25, 1), 
+                        left 0.6s linear, 
+                        top 0.6s cubic-bezier(0.5, -0.5, 1, 1), 
+                        opacity 0.6s ease;
         }
     </style>
 </head>
-<body class="bg-slate-50 text-slate-800 font-sans antialiased min-h-screen flex flex-col pb-12 select-none">
+<body>
 
     <!-- 顶部导航栏 -->
-    <header class="sticky top-0 z-40 bg-white/80 backdrop-blur-md border-b border-slate-100 px-4 py-3.5 flex items-center justify-between">
-        <div class="flex items-center gap-3">
-            <button id="menu-btn" class="p-2 -ml-2 rounded-lg text-slate-600 hover:bg-slate-100 tap-feedback">
-                <i data-lucide="menu" class="w-6 h-6"></i>
+    <header>
+        <div class="header-left">
+            <button id="menu-btn" class="menu-btn tap-feedback">
+                <i data-lucide="menu"></i>
             </button>
-            <h1 id="page-title" class="text-lg font-bold text-slate-900 tracking-tight">点菜开单</h1>
+            <h1 id="page-title" class="page-title">点菜开单</h1>
         </div>
         <div id="header-action-container">
-            <!-- 动态注入右侧操作按钮 -->
+            <!-- 动态清空历史按钮位置 -->
         </div>
     </header>
 
     <!-- 侧边抽屉布局 (Drawer) -->
-    <div id="drawer-overlay" class="fixed inset-0 bg-slate-900/40 z-50 backdrop-blur-sm hidden transition-opacity duration-300 opacity-0"></div>
-    <aside id="drawer" class="fixed top-0 left-0 bottom-0 w-72 bg-white z-50 shadow-2xl transform -translate-x-full transition-transform duration-300 ease-out flex flex-col justify-between">
+    <div id="drawer-overlay" class="drawer-overlay"></div>
+    <aside id="drawer" class="drawer">
         <div>
-            <!-- 抽屉头部 -->
-            <div class="p-6 border-b border-slate-100 flex items-center justify-between">
-                <div class="flex items-center gap-2">
-                    <div class="bg-amber-500 text-white p-1.5 rounded-lg">
-                        <i data-lucide="utensils-crossedd" class="w-5 h-5"></i>
+            <div class="drawer-header">
+                <div class="brand">
+                    <div class="brand-icon">
+                        <i data-lucide="utensils-crossed" style="width: 18px; height: 18px;"></i>
                     </div>
-                    <span class="font-bold text-slate-900 text-lg">极简餐掌柜</span>
+                    <span class="brand-name">极简餐掌柜</span>
                 </div>
-                <button id="close-drawer-btn" class="p-1 rounded-full text-slate-400 hover:bg-slate-100">
-                    <i data-lucide="x" class="w-5 h-5"></i>
+                <button id="close-drawer-btn" class="close-btn">
+                    <i data-lucide="x" style="width: 18px; height: 18px;"></i>
                 </button>
             </div>
-            <!-- 导航选项 -->
-            <nav class="p-4 space-y-1">
-                <button onclick="switchPage('order')" class="nav-item w-full flex items-center gap-3 px-4 py-3.5 rounded-xl text-left text-sm font-medium transition-colors tap-feedback bg-amber-50 text-amber-600" data-page="order">
-                    <i data-lucide="shopping-bag" class="w-5 h-5"></i>
-                    <span>点菜页面</span>
+            <nav class="drawer-nav">
+                <button onclick="switchPage('order')" class="nav-item active" data-page="order">
+                    <div class="nav-item-left">
+                        <i data-lucide="shopping-bag" style="width: 18px; height: 18px;"></i>
+                        <span>点菜页面</span>
+                    </div>
                 </button>
-                <button onclick="switchPage('kitchen')" class="nav-item w-full flex items-center justify-between px-4 py-3.5 rounded-xl text-left text-sm font-medium transition-colors tap-feedback text-slate-600 hover:bg-slate-50" data-page="kitchen">
-                    <div class="flex items-center gap-3">
-                        <i data-lucide="chef-hat" class="w-5 h-5"></i>
+                <button onclick="switchPage('kitchen')" class="nav-item" data-page="kitchen">
+                    <div class="nav-item-left">
+                        <i data-lucide="chef-hat" style="width: 18px; height: 18px;"></i>
                         <span>菜台页面</span>
                     </div>
-                    <span id="badge-kitchen-count" class="bg-rose-500 text-white text-[10px] font-bold px-1.5 py-0.5 rounded-full hidden">0</span>
+                    <span id="badge-kitchen-count" class="badge" style="display: none;">0</span>
                 </button>
-                <button onclick="switchPage('history')" class="nav-item w-full flex items-center gap-3 px-4 py-3.5 rounded-xl text-left text-sm font-medium transition-colors tap-feedback text-slate-600 hover:bg-slate-50" data-page="history">
-                    <i data-lucide="history" class="w-5 h-5"></i>
-                    <span>历史菜单</span>
+                <button onclick="switchPage('history')" class="nav-item" data-page="history">
+                    <div class="nav-item-left">
+                        <i data-lucide="history" style="width: 18px; height: 18px;"></i>
+                        <span>历史菜单</span>
+                    </div>
                 </button>
-                <button onclick="switchPage('stats')" class="nav-item w-full flex items-center gap-3 px-4 py-3.5 rounded-xl text-left text-sm font-medium transition-colors tap-feedback text-slate-600 hover:bg-slate-50" data-page="stats">
-                    <i data-lucide="bar-chart-3" class="w-5 h-5"></i>
-                    <span>数据统计</span>
+                <button onclick="switchPage('stats')" class="nav-item" data-page="stats">
+                    <div class="nav-item-left">
+                        <i data-lucide="bar-chart-2" style="width: 18px; height: 18px;"></i>
+                        <span>数据统计</span>
+                    </div>
                 </button>
             </nav>
         </div>
-        <div class="p-4 border-t border-slate-100 text-center text-xs text-slate-400">
-            极简餐饮系统 v1.3.0
+        <div class="drawer-footer">
+            极简餐饮系统 v1.4.0
         </div>
     </aside>
 
     <!-- 主体内容区域 -->
-    <main class="flex-1 max-w-md mx-auto w-full px-4 py-4 overflow-x-hidden">
+    <main>
         
         <!-- 1. 点菜页面 -->
-        <section id="page-order" class="space-y-6">
-            <!-- 桌号输入与锁死区 -->
-            <div class="bg-white rounded-2xl p-4 shadow-sm border border-slate-100 flex items-center justify-between gap-3">
-                <div class="flex items-center gap-2 text-slate-600 flex-1">
-                    <i data-lucide="hash" class="w-5 h-5 text-slate-400"></i>
-                    <span class="text-sm font-medium shrink-0">就餐桌号:</span>
-                    <input id="table-number-input" type="text" placeholder="请输入桌号" class="w-full bg-slate-50 border border-slate-200 rounded-xl py-2 px-3 text-sm font-bold text-slate-800 focus:outline-none focus:border-amber-500 transition-all">
+        <section id="page-order" class="page active">
+            <div class="table-lock-section card-shadow">
+                <div class="table-input-wrap">
+                    <i data-lucide="hash" style="color: #94a3b8; width: 18px; height: 18px;"></i>
+                    <span>就餐桌号:</span>
+                    <input id="table-number-input" type="text" placeholder="请输入桌号" class="table-input">
                 </div>
-                <button id="lock-table-btn" onclick="toggleLockTable()" class="bg-slate-950 text-white text-xs font-semibold px-4 py-2.5 rounded-xl tap-feedback flex items-center gap-1 shrink-0">
-                    <i data-lucide="lock" class="w-3.5 h-3.5"></i>
+                <button id="lock-table-btn" onclick="toggleLockTable()" class="lock-btn tap-feedback">
+                    <i data-lucide="lock" style="width: 14px; height: 14px;"></i>
                     <span>确定桌号</span>
                 </button>
             </div>
-
-            <!-- 菜品分类滚动列表 -->
-            <div id="menu-categories" class="space-y-6">
-                <!-- 动态渲染 -->
+            <div id="menu-categories">
+                <!-- 分类及菜品在此加载 -->
             </div>
         </section>
 
         <!-- 2. 菜台页面 -->
-        <section id="page-kitchen" class="hidden space-y-4">
-            <div class="flex items-center justify-between">
-                <p class="text-xs text-slate-400">提示: 点击桌号卡片查看并标记菜品进度</p>
-                <span class="text-xs font-medium text-slate-500" id="kitchen-total-info">共 0 桌未结账</span>
+        <section id="page-kitchen" class="page">
+            <div class="page-info-bar">
+                <span class="page-tip">提示: 点击桌号卡片查看并标记菜品进度</span>
+                <span id="kitchen-total-info" class="page-summary">共 0 桌未结账</span>
             </div>
-            <div id="kitchen-list" class="space-y-3"></div>
+            <div id="kitchen-list" class="order-card-list"></div>
         </section>
 
         <!-- 3. 历史菜单页面 -->
-        <section id="page-history" class="hidden space-y-4">
-            <div class="flex items-center justify-between">
-                <p class="text-xs text-slate-400">展示所有已结账的就餐记录</p>
-                <span class="text-xs font-medium text-slate-500" id="history-total-info">共 0 笔历史</span>
+        <section id="page-history" class="page">
+            <div class="page-info-bar">
+                <span class="page-tip">展示所有已结账的就餐记录</span>
+                <span id="history-total-info" class="page-summary">共 0 笔历史</span>
             </div>
-            <div id="history-list" class="space-y-3"></div>
+            <div id="history-list" class="order-card-list"></div>
         </section>
 
         <!-- 4. 统计页面 -->
-        <section id="page-stats" class="hidden space-y-6">
-            <div class="grid grid-cols-2 gap-4">
-                <div class="bg-emerald-50 border border-emerald-100 rounded-2xl p-4">
-                    <span class="text-xs text-emerald-600 font-medium">已结账总额</span>
-                    <h3 id="stats-total-revenue" class="text-2xl font-black text-emerald-800 mt-1">¥0</h3>
+        <section id="page-stats" class="page">
+            <div class="stats-grid">
+                <div class="stats-box stats-box-green">
+                    <span class="stats-label">已结账总额</span>
+                    <h3 id="stats-total-revenue" class="stats-val stats-val-green">¥0</h3>
                 </div>
-                <div class="bg-indigo-50 border border-indigo-100 rounded-2xl p-4">
-                    <span class="text-xs text-indigo-600 font-medium">已完成桌数</span>
-                    <h3 id="stats-total-tables" class="text-2xl font-black text-indigo-800 mt-1">0 桌</h3>
+                <div class="stats-box stats-box-indigo">
+                    <span class="stats-label">已完成桌数</span>
+                    <h3 id="stats-total-tables" class="stats-val stats-val-indigo">0 桌</h3>
                 </div>
             </div>
 
-            <div class="bg-white rounded-2xl p-5 shadow-sm border border-slate-100 space-y-4">
-                <h3 class="text-sm font-bold text-slate-900 border-b border-slate-50 pb-3 flex items-center gap-2">
-                    <i data-lucide="trending-up" class="w-4 h-4 text-amber-500"></i>
-                    菜品销量排行榜
-                </h3>
-                <div id="stats-items-list" class="space-y-3 max-h-[350px] overflow-y-auto no-scrollbar"></div>
+            <div class="rank-card card-shadow">
+                <div class="rank-header">
+                    <i data-lucide="trending-up" style="color: #f59e0b; width: 18px; height: 18px;"></i>
+                    <span class="rank-title">菜品销量排行榜</span>
+                </div>
+                <div id="stats-items-list" class="rank-list no-scrollbar"></div>
             </div>
 
-            <div class="pt-2">
-                <button onclick="showExportModal()" class="w-full bg-slate-950 text-white rounded-2xl py-4 font-semibold text-sm flex items-center justify-center gap-2 shadow-lg hover:bg-slate-900 transition-colors tap-feedback">
-                    <i data-lucide="download" class="w-4 h-4"></i>
-                    导出数据文本
-                </button>
-            </div>
+            <button onclick="showExportModal()" class="export-btn tap-feedback">
+                <i data-lucide="download" style="width: 16px; height: 16px;"></i>
+                导出数据文本
+            </button>
         </section>
 
     </main>
 
     <!-- 点菜页面专用: 悬浮购物车按钮 -->
-    <div id="cart-float-btn" class="fixed bottom-6 right-6 z-40 transition-all duration-300">
-        <button onclick="toggleCartModal(true)" class="bg-amber-500 hover:bg-amber-600 text-white w-14 h-14 rounded-full shadow-xl shadow-amber-500/20 flex items-center justify-center relative tap-feedback">
-            <i data-lucide="shopping-cart" class="w-6 h-6"></i>
-            <span id="cart-badge" class="absolute -top-1 -right-1 bg-rose-500 text-white text-[10px] font-bold w-5 h-5 rounded-full flex items-center justify-center border-2 border-white hidden">0</span>
-        </button>
-    </div>
+    <button id="cart-float-btn" onclick="toggleCartModal(true)" class="cart-float-btn tap-feedback">
+        <i data-lucide="shopping-cart"></i>
+        <span id="cart-badge" class="cart-badge-dot" style="display: none;">0</span>
+    </button>
 
     <!-- 弹窗：购物车明细 -->
-    <div id="cart-modal" onclick="handleOutsideClick(event, 'cart-modal', () => toggleCartModal(false))" class="fixed inset-0 z-50 bg-slate-900/40 backdrop-blur-sm hidden flex items-end justify-center">
-        <div id="cart-modal-content" class="bg-white w-full max-w-md rounded-t-3xl shadow-2xl max-h-[85vh] flex flex-col transform translate-y-full transition-transform duration-300">
-            <div class="px-6 py-5 border-b border-slate-100 flex items-center justify-between">
+    <div id="cart-modal" onclick="handleOutsideClick(event, 'cart-modal', () => toggleCartModal(false))" class="modal">
+        <div id="cart-modal-content" class="modal-content">
+            <div class="modal-header">
                 <div>
-                    <h3 class="font-bold text-slate-900 text-lg">当前选购菜品</h3>
-                    <p id="cart-table-info" class="text-xs text-amber-600 mt-0.5">未填写桌号</p>
+                    <h3 style="font-size: 16px; font-weight: 800; color: #0f172a;">当前选购菜品</h3>
+                    <p id="cart-table-info" style="font-size: 11px; color: #d97706; margin-top: 2px;">未填写桌号</p>
                 </div>
-                <button onclick="toggleCartModal(false)" class="p-1 rounded-full text-slate-400 hover:bg-slate-100">
-                    <i data-lucide="x" class="w-5 h-5"></i>
+                <button onclick="toggleCartModal(false)" class="close-btn">
+                    <i data-lucide="x" style="width: 18px; height: 18px;"></i>
                 </button>
             </div>
-            <div id="cart-items-list" class="p-6 overflow-y-auto no-scrollbar flex-1 space-y-4"></div>
-            <div class="p-6 border-t border-slate-100 space-y-4 bg-slate-50/50">
-                <div class="flex items-center justify-between text-sm">
-                    <span class="text-slate-500">已点数量 / 合计金额</span>
-                    <span class="font-extrabold text-slate-900 text-base" id="cart-total-price">0 件 / ¥0</span>
+            <div id="cart-items-list" class="modal-body no-scrollbar"></div>
+            <div class="modal-footer">
+                <div style="display: flex; align-items: center; justify-content: space-between; font-size: 13px;">
+                    <span style="color: #64748b;">已点数量 / 合计金额</span>
+                    <span id="cart-total-price" style="font-size: 15px; font-weight: 900; color: #0f172a;">0 件 / ¥0</span>
                 </div>
-                <button onclick="submitOrder()" class="w-full bg-amber-500 hover:bg-amber-600 text-white font-bold py-4 rounded-xl shadow-lg flex items-center justify-center gap-2 tap-feedback">
-                    <i data-lucide="send" class="w-4 h-4"></i>
+                <button onclick="submitOrder()" style="width: 100%; background-color: #f59e0b; color: #ffffff; border: none; border-radius: 12px; padding: 14px; font-size: 14px; font-weight: 700; cursor: pointer; display: flex; align-items: center; justify-content: center; gap: 8px;" class="tap-feedback">
+                    <i data-lucide="send" style="width: 16px; height: 16px;"></i>
                     确认下单
                 </button>
             </div>
@@ -208,64 +985,60 @@
     </div>
 
     <!-- 弹窗：菜台/历史 订单详情 (支持点击外部遮罩关闭) -->
-    <div id="detail-modal" onclick="handleOutsideClick(event, 'detail-modal', () => toggleDetailModal(false))" class="fixed inset-0 z-50 bg-slate-900/40 backdrop-blur-sm hidden flex items-end justify-center">
-        <div id="detail-modal-content" class="bg-white w-full max-w-md rounded-t-3xl shadow-2xl max-h-[85vh] flex flex-col transform translate-y-full transition-transform duration-300">
-            <div class="px-6 py-5 border-b border-slate-100 flex items-center justify-between">
+    <div id="detail-modal" onclick="handleOutsideClick(event, 'detail-modal', () => toggleDetailModal(false))" class="modal">
+        <div id="detail-modal-content" class="modal-content">
+            <div class="modal-header">
                 <div>
-                    <div class="flex items-center gap-2">
-                        <span id="detail-table" class="font-extrabold text-slate-900 text-lg">01 号桌</span>
-                        <span id="detail-tag-status" class="text-[10px] px-2 py-0.5 font-bold rounded"></span>
+                    <div style="display: flex; align-items: center; gap: 8px;">
+                        <span id="detail-table" style="font-size: 16px; font-weight: 800; color: #0f172a;">01 号桌</span>
+                        <span id="detail-tag-status" class="status-pill"></span>
                     </div>
-                    <p id="detail-time" class="text-xs text-slate-400 mt-0.5">下单时间: --</p>
+                    <p id="detail-time" style="font-size: 11px; color: #94a3b8; margin-top: 2px;">下单时间: --</p>
                 </div>
-                <button onclick="toggleDetailModal(false)" class="p-1 rounded-full text-slate-400 hover:bg-slate-100">
-                    <i data-lucide="x" class="w-5 h-5"></i>
+                <button onclick="toggleDetailModal(false)" class="close-btn">
+                    <i data-lucide="x" style="width: 18px; height: 18px;"></i>
                 </button>
             </div>
-            <div id="detail-items-list" class="p-6 overflow-y-auto no-scrollbar flex-1 space-y-4"></div>
-            <div id="detail-footer-btn-container" class="p-6 border-t border-slate-100 bg-slate-50/50"></div>
+            <div id="detail-items-list" class="modal-body no-scrollbar"></div>
+            <div id="detail-footer-btn-container" class="modal-footer"></div>
         </div>
     </div>
 
     <!-- 弹窗：导出数据 -->
-    <div id="export-modal" onclick="handleOutsideClick(event, 'export-modal', () => toggleExportModal(false))" class="fixed inset-0 z-50 bg-slate-900/40 backdrop-blur-sm hidden flex items-center justify-center p-4">
-        <div id="export-modal-content" class="bg-white w-full max-w-xs rounded-2xl shadow-xl p-5 space-y-4 flex flex-col">
-            <div class="flex items-center justify-between">
-                <h4 class="font-bold text-slate-900 text-sm">导出的统计文本</h4>
-                <button onclick="toggleExportModal(false)" class="p-1 rounded-full text-slate-400 hover:bg-slate-100">
-                    <i data-lucide="x" class="w-4 h-4"></i>
+    <div id="export-modal" onclick="handleOutsideClick(event, 'export-modal', () => toggleExportModal(false))" class="modal" style="align-items: center; padding: 16px;">
+        <div id="export-modal-content" class="modal-content" style="max-width: 320px; border-radius: 20px; padding: 20px;">
+            <div style="display: flex; align-items: center; justify-content: space-between; margin-bottom: 12px;">
+                <h4 style="font-size: 14px; font-weight: 800; color: #0f172a;">导出的统计文本</h4>
+                <button onclick="toggleExportModal(false)" class="close-btn">
+                    <i data-lucide="x" style="width: 16px; height: 16px;"></i>
                 </button>
             </div>
-            <textarea id="export-text-area" readonly class="w-full h-40 bg-slate-50 border border-slate-200 rounded-xl p-3 text-xs font-mono text-slate-700 focus:outline-none resize-none"></textarea>
-            <button onclick="copyExportText()" class="w-full bg-slate-950 text-white rounded-xl py-3 text-xs font-medium tap-feedback">
+            <textarea id="export-text-area" readonly style="width: 100%; height: 160px; background-color: #f8fafc; border: 1px solid #e2e8f0; border-radius: 12px; padding: 10px; font-size: 12px; font-family: monospace; color: #334155; outline: none; resize: none; margin-bottom: 14px;"></textarea>
+            <button onclick="copyExportText()" style="width: 100%; background-color: #0f172a; color: #ffffff; border: none; border-radius: 12px; padding: 12px; font-size: 13px; font-weight: 700; cursor: pointer;" class="tap-feedback">
                 复制全部文本
             </button>
         </div>
     </div>
 
     <!-- 弹窗：清空历史密码输入验证弹窗 -->
-    <div id="password-modal" onclick="handleOutsideClick(event, 'password-modal', () => togglePasswordModal(false))" class="fixed inset-0 z-50 bg-slate-900/40 backdrop-blur-sm hidden flex items-center justify-center p-4">
-        <div id="password-modal-content" class="bg-white w-full max-w-xs rounded-2xl shadow-xl p-5 space-y-4 flex flex-col transform scale-95 transition-transform duration-200">
-            <div class="flex items-center gap-2 text-rose-600">
-                <i data-lucide="shield-alert" class="w-5 h-5"></i>
-                <h4 class="font-bold text-slate-900 text-sm">安全验证</h4>
+    <div id="password-modal" onclick="handleOutsideClick(event, 'password-modal', () => togglePasswordModal(false))" class="center-modal">
+        <div id="password-modal-content" class="center-modal-content">
+            <div class="pwd-title-wrap">
+                <i data-lucide="shield-alert" style="width: 18px; height: 18px;"></i>
+                <h4 style="font-size: 14px; font-weight: 800; color: #0f172a;">安全验证</h4>
             </div>
-            <p class="text-xs text-slate-500 leading-relaxed">清空历史数据是不可逆的操作。请输入管理密码进行确认：</p>
-            <input id="admin-password-input" type="password" placeholder="请输入管理员密码" class="w-full bg-slate-50 border border-slate-200 rounded-xl py-2 px-3 text-sm text-slate-800 text-center focus:outline-none focus:border-rose-500 transition-all">
-            <div class="flex gap-2 pt-1">
-                <button onclick="togglePasswordModal(false)" class="flex-1 bg-slate-100 hover:bg-slate-200 text-slate-700 rounded-xl py-2.5 text-xs font-semibold tap-feedback">
-                    取消
-                </button>
-                <button onclick="verifyAndClearHistory()" class="flex-1 bg-rose-500 hover:bg-rose-600 text-white rounded-xl py-2.5 text-xs font-semibold tap-feedback">
-                    验证并清空
-                </button>
+            <p class="pwd-desc">清空历史数据是不可逆的操作。请输入管理密码进行确认：</p>
+            <input id="admin-password-input" type="password" placeholder="请输入管理员密码" class="pwd-input">
+            <div class="btn-row">
+                <button onclick="togglePasswordModal(false)" class="btn-cancel tap-feedback">取消</button>
+                <button onclick="verifyAndClearHistory()" class="btn-confirm tap-feedback">验证并清空</button>
             </div>
         </div>
     </div>
 
-    <!-- 通知组件 (Toast) -->
-    <div id="toast" class="fixed bottom-24 left-1/2 transform -translate-x-1/2 z-50 bg-slate-900 text-white text-xs font-medium px-4 py-2.5 rounded-full shadow-lg pointer-events-none transition-all duration-300 opacity-0 translate-y-2 flex items-center gap-2">
-        <i data-lucide="info" class="w-3.5 h-3.5 text-amber-400"></i>
+    <!-- 信息通知组件 (Toast) -->
+    <div id="toast" class="toast">
+        <i data-lucide="info" style="color: #fbbf24; width: 14px; height: 14px;"></i>
         <span id="toast-text"></span>
     </div>
 
@@ -326,7 +1099,7 @@
         ];
 
         // ==========================================
-        //  业务逻辑代码 CORE CODE (无需轻易修改)
+        //  业务逻辑代码 CORE CODE
         // ==========================================
 
         let currentCart = {}; 
@@ -351,11 +1124,9 @@
         function showToast(message) {
             const toast = document.getElementById("toast");
             document.getElementById("toast-text").innerText = message;
-            toast.classList.remove("opacity-0", "translate-y-2");
-            toast.classList.add("opacity-100", "translate-y-0");
+            toast.classList.add("show");
             setTimeout(() => {
-                toast.classList.remove("opacity-100", "translate-y-0");
-                toast.classList.add("opacity-0", "translate-y-2");
+                toast.classList.remove("show");
             }, 2000);
         }
 
@@ -379,16 +1150,14 @@
             if (!isTableLocked) {
                 isTableLocked = true;
                 input.disabled = true;
-                input.classList.add("bg-slate-100", "text-slate-400");
-                btn.innerHTML = `<i data-lucide="unlock" class="w-3.5 h-3.5"></i><span>修改桌号</span>`;
-                btn.className = "bg-amber-600 text-white text-xs font-semibold px-4 py-2.5 rounded-xl tap-feedback flex items-center gap-1 shrink-0";
+                btn.innerHTML = `<i data-lucide="unlock" style="width: 14px; height: 14px;"></i><span>修改桌号</span>`;
+                btn.classList.add("locked");
                 showToast(`🔒 桌号 [${val}] 已锁定`);
             } else {
                 isTableLocked = false;
                 input.disabled = false;
-                input.classList.remove("bg-slate-100", "text-slate-400");
-                btn.innerHTML = `<i data-lucide="lock" class="w-3.5 h-3.5"></i><span>确定桌号</span>`;
-                btn.className = "bg-slate-950 text-white text-xs font-semibold px-4 py-2.5 rounded-xl tap-feedback flex items-center gap-1 shrink-0";
+                btn.innerHTML = `<i data-lucide="lock" style="width: 14px; height: 14px;"></i><span>确定桌号</span>`;
+                btn.classList.remove("locked");
             }
             lucide.createIcons();
         }
@@ -400,18 +1169,18 @@
         const overlay = document.getElementById("drawer-overlay");
 
         function openDrawer() {
-            overlay.classList.remove("hidden");
+            overlay.style.display = "block";
             setTimeout(() => {
-                overlay.classList.add("opacity-100");
-                drawer.classList.remove("-translate-x-full");
+                overlay.style.opacity = "1";
+                drawer.style.transform = "translateX(0)";
             }, 10);
         }
 
         function closeDrawer() {
-            drawer.classList.add("-translate-x-full");
-            overlay.classList.remove("opacity-100");
+            drawer.style.transform = "translateX(-100%)";
+            overlay.style.opacity = "0";
             setTimeout(() => {
-                overlay.classList.add("hidden");
+                overlay.style.display = "none";
             }, 300);
         }
 
@@ -423,29 +1192,24 @@
         function switchPage(pageId) {
             closeDrawer();
 
-            document.getElementById("page-order").classList.add("hidden");
-            document.getElementById("page-kitchen").classList.add("hidden");
-            document.getElementById("page-history").classList.add("hidden");
-            document.getElementById("page-stats").classList.add("hidden");
-            document.getElementById(`page-${pageId}`).classList.remove("hidden");
+            // 隐藏所有页面
+            document.querySelectorAll(".page").forEach(page => page.classList.remove("active"));
+            document.getElementById(`page-${pageId}`).classList.add("active");
 
-            document.querySelectorAll(".nav-item").forEach(btn => {
-                btn.classList.remove("bg-amber-50", "text-amber-600");
-                btn.classList.add("text-slate-600", "hover:bg-slate-50");
-            });
+            // 更新菜单高亮
+            document.querySelectorAll(".nav-item").forEach(btn => btn.classList.remove("active"));
             const activeBtn = document.querySelector(`.nav-item[data-page="${pageId}"]`);
             if (activeBtn) {
-                activeBtn.classList.remove("text-slate-600", "hover:bg-slate-50");
-                activeBtn.classList.add("bg-amber-50", "text-amber-600");
+                activeBtn.classList.add("active");
             }
 
             const titleMap = { 'order': '点菜开单', 'kitchen': '菜台监控', 'history': '历史结账', 'stats': '数据统计' };
             document.getElementById("page-title").innerText = titleMap[pageId];
 
-            // ⚠️ 隔离购物车悬浮按钮
+            // ⚠️ 物理隔离购物车按钮
             const cartContainer = document.getElementById("cart-float-btn");
             if (pageId === 'order') {
-                cartContainer.style.display = 'block';
+                cartContainer.style.display = 'flex';
             } else {
                 cartContainer.style.display = 'none';
             }
@@ -454,8 +1218,8 @@
             headerAction.innerHTML = "";
             if (pageId === 'history') {
                 headerAction.innerHTML = `
-                    <button onclick="clearAllHistory()" class="text-xs bg-rose-50 text-rose-600 font-bold px-3 py-1.5 rounded-lg border border-rose-100 tap-feedback flex items-center gap-1">
-                        <i data-lucide="trash-2" class="w-3.5 h-3.5"></i>清空历史
+                    <button onclick="clearAllHistory()" class="action-sm-btn action-btn-red tap-feedback" style="padding: 8px 12px; border-radius: 10px;">
+                        <i data-lucide="trash-2" style="width: 14px; height: 14px;"></i>清空历史
                     </button>
                 `;
             }
@@ -474,32 +1238,32 @@
 
             MENU_DATA.forEach(categoryObj => {
                 const categoryDiv = document.createElement("div");
-                categoryDiv.className = "space-y-3";
+                categoryDiv.className = "category-section";
                 categoryDiv.innerHTML = `
-                    <div class="flex items-center gap-2">
-                        <span class="w-1 h-4 bg-amber-500 rounded-full"></span>
-                        <h2 class="text-sm font-bold text-slate-800 tracking-wide">${categoryObj.category}</h2>
+                    <div class="category-title-wrap">
+                        <span class="category-indicator"></span>
+                        <h2 class="category-title">${categoryObj.category}</h2>
                     </div>
                 `;
 
                 const scrollContainer = document.createElement("div");
-                scrollContainer.className = "flex gap-3 overflow-x-auto no-scrollbar pb-1 px-1 -mx-1 snap-x snap-mandatory";
+                scrollContainer.className = "dish-scroll no-scrollbar";
 
                 categoryObj.items.forEach(item => {
                     const card = document.createElement("div");
-                    card.className = "bg-white min-w-[140px] max-w-[140px] snap-start shrink-0 rounded-2xl p-4 shadow-sm border border-slate-100 flex flex-col justify-between h-36 relative transition-all duration-200";
+                    card.className = "dish-card card-shadow";
                     card.innerHTML = `
-                        <div class="space-y-1">
-                            <h4 class="font-bold text-slate-800 text-sm leading-snug break-words line-clamp-2">${item.name}</h4>
-                            <p class="text-xs text-amber-600 font-extrabold">¥${item.price}/${item.unit}</p>
+                        <div class="dish-info">
+                            <h4>${item.name}</h4>
+                            <p>¥${item.price}/${item.unit}</p>
                         </div>
-                        <div class="flex items-center justify-between mt-auto">
-                            <button onclick="changeQty('${item.id}', -1, event)" class="w-7 h-7 rounded-lg bg-slate-50 border border-slate-200 text-slate-500 flex items-center justify-center tap-feedback">
-                                <i data-lucide="minus" class="w-3.5 h-3.5"></i>
+                        <div class="dish-controls">
+                            <button onclick="changeQty('${item.id}', -1, event)" class="qty-btn qty-minus tap-feedback">
+                                <i data-lucide="minus" style="width: 12px; height: 12px;"></i>
                             </button>
-                            <span id="qty-${item.id}" class="text-xs font-bold text-slate-700">0</span>
-                            <button onclick="changeQty('${item.id}', 1, event)" class="w-7 h-7 rounded-lg bg-amber-500 text-white flex items-center justify-center shadow-md shadow-amber-500/15 tap-feedback">
-                                <i data-lucide="plus" class="w-3.5 h-3.5"></i>
+                            <span id="qty-${item.id}" class="qty-num">0</span>
+                            <button onclick="changeQty('${item.id}', 1, event)" class="qty-btn qty-plus tap-feedback">
+                                <i data-lucide="plus" style="width: 12px; height: 12px;"></i>
                             </button>
                         </div>
                     `;
@@ -511,7 +1275,6 @@
             });
         }
 
-        // 数量控制并触发飞入动画
         function changeQty(itemId, val, event) {
             const currentQty = currentCart[itemId] || 0;
             const newQty = Math.max(0, currentQty + val);
@@ -527,41 +1290,38 @@
                     void qtyElement.offsetWidth; 
                     qtyElement.classList.add("pop-active");
                     
-                    // ⚠️ 点击加号触发飞入购物车华丽微动效
+                    // 抛物线飞入
                     createFlyingBubble(event);
                 }
             }
             updateFloatingCart();
         }
 
-        // 飞入购物车粒子特效
+        // 3D抛物线算法
         function createFlyingBubble(e) {
             const button = e.currentTarget;
             const btnRect = button.getBoundingClientRect();
             const cartBtn = document.getElementById("cart-float-btn");
             const cartRect = cartBtn.getBoundingClientRect();
 
-            // 生成空中滑翔的小粒子
             const bubble = document.createElement("div");
-            bubble.className = "fixed bg-amber-500 rounded-full z-50 pointer-events-none transition-all duration-500 cubic-bezier(0.25, 1, 0.5, 1)";
+            bubble.className = "fly-particle";
             bubble.style.width = "14px";
             bubble.style.height = "14px";
             bubble.style.left = `${btnRect.left + btnRect.width / 2 - 7}px`;
             bubble.style.top = `${btnRect.top + btnRect.height / 2 - 7}px`;
             document.body.appendChild(bubble);
 
-            // 触发位移
             setTimeout(() => {
-                bubble.style.left = `${cartRect.left + cartRect.width / 2 - 7}px`;
-                bubble.style.top = `${cartRect.top + cartRect.height / 2 - 7}px`;
-                bubble.style.transform = "scale(0.1)";
-                bubble.style.opacity = "0";
+                const targetX = cartRect.left + cartRect.width / 2 - 7;
+                const targetY = cartRect.top + cartRect.height / 2 - 7;
+                
+                bubble.style.transform = `translate(${targetX - (btnRect.left + btnRect.width / 2 - 7)}px, ${targetY - (btnRect.top + btnRect.height / 2 - 7)}px) scale(0.2)`;
+                bubble.style.opacity = "0.2";
             }, 20);
 
-            // 动画完成收尾
             bubble.addEventListener("transitionend", () => {
                 bubble.remove();
-                // 购物车弹跳反馈
                 cartBtn.classList.remove("cart-bounce");
                 void cartBtn.offsetWidth;
                 cartBtn.classList.add("cart-bounce");
@@ -582,9 +1342,9 @@
             const cartBadge = document.getElementById("cart-badge");
             if (totalQty > 0) {
                 cartBadge.innerText = totalQty;
-                cartBadge.classList.remove("hidden");
+                cartBadge.style.display = "flex";
             } else {
-                cartBadge.classList.add("hidden");
+                cartBadge.style.display = "none";
             }
         }
 
@@ -593,11 +1353,11 @@
             const content = document.getElementById("cart-modal-content");
             if (show) {
                 renderCartModalItems();
-                modal.classList.remove("hidden");
-                setTimeout(() => content.classList.remove("translate-y-full"), 10);
+                modal.style.display = "flex";
+                setTimeout(() => content.style.transform = "translateY(0)", 10);
             } else {
-                content.classList.add("translate-y-full");
-                setTimeout(() => modal.classList.add("hidden"), 300);
+                content.style.transform = "translateY(100%)";
+                setTimeout(() => modal.style.display = "none", 300);
             }
         }
 
@@ -613,9 +1373,9 @@
 
             if (cartKeys.length === 0) {
                 container.innerHTML = `
-                    <div class="flex flex-col items-center justify-center py-12 text-slate-400">
-                        <i data-lucide="shopping-cart" class="w-12 h-12 stroke-[1.5] mb-2"></i>
-                        <span class="text-xs">您的购物车空空如也~</span>
+                    <div style="text-align: center; padding: 32px 0; color: #94a3b8; display: flex; flex-direction: column; align-items: center; gap: 8px;">
+                        <i data-lucide="shopping-cart" style="width: 36px; height: 36px;"></i>
+                        <span style="font-size: 12px;">购物车空空如也~</span>
                     </div>
                 `;
             } else {
@@ -628,19 +1388,19 @@
                     totalPrice += subtotal;
 
                     const div = document.createElement("div");
-                    div.className = "flex items-center justify-between pb-3 border-b border-slate-50";
+                    div.className = "modal-item";
                     div.innerHTML = `
-                        <div class="space-y-0.5">
-                            <h4 class="text-sm font-bold text-slate-800">${item.name}</h4>
-                            <p class="text-xs text-slate-400">单价 ¥${item.price} / ${item.unit}</p>
+                        <div class="modal-item-left">
+                            <span class="modal-item-title">${item.name}</span>
+                            <span class="modal-item-price">单价 ¥${item.price} / ${item.unit}</span>
                         </div>
-                        <div class="flex items-center gap-3">
-                            <div class="flex items-center gap-2">
-                                <button onclick="changeQty('${itemId}', -1, event); renderCartModalItems();" class="w-6 h-6 rounded bg-slate-100 text-slate-500 flex items-center justify-center tap-feedback"><i data-lucide="minus" class="w-3 h-3"></i></button>
-                                <span class="text-xs font-bold w-4 text-center">${qty}</span>
-                                <button onclick="changeQty('${itemId}', 1, event); renderCartModalItems();" class="w-6 h-6 rounded bg-amber-500 text-white flex items-center justify-center tap-feedback"><i data-lucide="plus" class="w-3 h-3"></i></button>
+                        <div class="modal-item-right">
+                            <div class="modal-item-action">
+                                <button onclick="changeQty('${itemId}', -1, event); renderCartModalItems();" class="qty-btn qty-minus" style="width: 24px; height: 24px;"><i data-lucide="minus" style="width: 10px; height: 10px;"></i></button>
+                                <span class="qty-num">${qty}</span>
+                                <button onclick="changeQty('${itemId}', 1, event); renderCartModalItems();" class="qty-btn qty-plus" style="width: 24px; height: 24px;"><i data-lucide="plus" style="width: 10px; height: 10px;"></i></button>
                             </div>
-                            <span class="text-sm font-extrabold text-slate-700 min-w-[50px] text-right">¥${subtotal}</span>
+                            <span style="font-size: 14px; font-weight: 800; color: #1e293b; min-width: 50px; text-align: right;">¥${subtotal}</span>
                         </div>
                     `;
                     container.appendChild(div);
@@ -653,7 +1413,7 @@
         function submitOrder() {
             const tableNo = document.getElementById("table-number-input").value.trim();
             if (!tableNo || !isTableLocked) {
-                showToast("⚠️ 请先输入并点击【确定桌号】进行锁定！");
+                showToast("⚠️ 请先确定并锁死桌号！");
                 return;
             }
 
@@ -677,19 +1437,17 @@
                 billed: false
             });
 
-            // 解锁并重置状态
             currentCart = {};
             isTableLocked = false;
             const input = document.getElementById("table-number-input");
             input.value = "";
             input.disabled = false;
-            input.classList.remove("bg-slate-100", "text-slate-400");
             
             const btn = document.getElementById("lock-table-btn");
-            btn.innerHTML = `<i data-lucide="lock" class="w-3.5 h-3.5"></i><span>确定桌号</span>`;
-            btn.className = "bg-slate-950 text-white text-xs font-semibold px-4 py-2.5 rounded-xl tap-feedback flex items-center gap-1 shrink-0";
+            btn.innerHTML = `<i data-lucide="lock" style="width: 14px; height: 14px;"></i><span>确定桌号</span>`;
+            btn.classList.remove("locked");
 
-            document.querySelectorAll("[id^='qty-']").forEach(el => el.innerText = "0");
+            document.querySelectorAll(".qty-num").forEach(el => el.innerText = "0");
 
             saveState();
             updateFloatingCart();
@@ -706,9 +1464,9 @@
 
             if (activeOrders.length === 0) {
                 container.innerHTML = `
-                    <div class="flex flex-col items-center justify-center py-20 text-slate-400 bg-white rounded-2xl border border-slate-100">
-                        <i data-lucide="chef-hat" class="w-14 h-14 stroke-[1.2] mb-3 text-slate-300"></i>
-                        <span class="text-sm">当前没有任何进行中的账单</span>
+                    <div style="text-align: center; padding: 48px 0; color: #94a3b8; background-color: #ffffff; border-radius: 16px; border: 1px dashed #e2e8f0; display: flex; flex-direction: column; align-items: center; gap: 10px;">
+                        <i data-lucide="chef-hat" style="width: 48px; height: 48px;"></i>
+                        <span style="font-size: 13px;">没有进行中的账单</span>
                     </div>
                 `;
                 document.getElementById("kitchen-total-info").innerText = "共 0 桌未结账";
@@ -726,22 +1484,23 @@
                 card.onclick = () => openOrderDetail(order.id, 'kitchen');
                 
                 if (isAllServed) {
-                    card.className = "bg-emerald-50 border-2 border-emerald-500 rounded-2xl p-4 shadow-sm flex items-center justify-between cursor-pointer tap-feedback transition-all";
+                    card.className = "order-card ready";
                 } else {
-                    card.className = "bg-white border border-slate-200 hover:border-amber-400 rounded-2xl p-4 shadow-sm flex items-center justify-between cursor-pointer tap-feedback transition-all";
+                    card.className = "order-card card-shadow";
                 }
 
                 card.innerHTML = `
-                    <div class="space-y-1">
-                        <div class="flex items-center gap-2">
-                            <span class="font-extrabold text-slate-900 text-base">${order.tableNo} 号桌</span>
-                            ${isAllServed ? `<span class="bg-emerald-500 text-white text-[9px] font-bold px-1.5 py-0.5 rounded-md">菜已上齐</span>` : `<span class="bg-amber-100 text-amber-700 text-[9px] font-bold px-1.5 py-0.5 rounded-md">正在上菜</span>`}
+                    <div class="order-card-left">
+                        <div class="order-card-header">
+                            <span class="order-table-title">${order.tableNo} 号桌</span>
+                            ${isAllServed ? `<span class="status-pill status-served">菜已上齐</span>` : `<span class="status-pill status-cooking">正在制作</span>`}
                         </div>
-                        <p class="text-xs text-slate-400">下单时间: ${order.timestamp}</p>
+                        <p class="order-items-snippet">${order.items.map(item => `${item.name}x${item.qty}`).join(", ")}</p>
+                        <p class="order-time">下单时间: ${order.timestamp}</p>
                     </div>
-                    <div class="text-right">
-                        <p class="text-xs font-semibold ${isAllServed ? 'text-emerald-700' : 'text-slate-600'}">${servedCount}/${totalCount} 菜品</p>
-                        <p class="text-[10px] text-slate-400 mt-0.5">合计: ¥${calcOrderTotal(order)}</p>
+                    <div class="order-card-right">
+                        <span class="order-count">${servedCount}/${totalCount} 菜品</span>
+                        <span class="order-price">¥${calcOrderTotal(order)}</span>
                     </div>
                 `;
                 container.appendChild(card);
@@ -768,11 +1527,11 @@
             const content = document.getElementById("detail-modal-content");
             if (show && currentDetailOrder) {
                 renderDetailModalItems(originPage);
-                modal.classList.remove("hidden");
-                setTimeout(() => content.classList.remove("translate-y-full"), 10);
+                modal.style.display = "flex";
+                setTimeout(() => content.style.transform = "translateY(0)", 10);
             } else {
-                content.classList.add("translate-y-full");
-                setTimeout(() => modal.classList.add("hidden"), 300);
+                content.style.transform = "translateY(100%)";
+                setTimeout(() => modal.style.display = "none", 300);
             }
         }
 
@@ -786,13 +1545,15 @@
             const tag = document.getElementById("detail-tag-status");
             const isAllServed = order.items.every(item => item.status === 'served' || item.status === 'canceled');
             if (order.billed) {
-                tag.className = "text-[10px] px-2 py-0.5 font-bold rounded bg-slate-200 text-slate-700";
+                tag.className = "status-pill status-served";
+                tag.style.backgroundColor = "#e2e8f0";
+                tag.style.color = "#475569";
                 tag.innerText = "已结账";
             } else if (isAllServed) {
-                tag.className = "text-[10px] px-2 py-0.5 font-bold rounded bg-emerald-100 text-emerald-800";
+                tag.className = "status-pill status-served";
                 tag.innerText = "全部上齐";
             } else {
-                tag.className = "text-[10px] px-2 py-0.5 font-bold rounded bg-amber-100 text-amber-800";
+                tag.className = "status-pill status-cooking";
                 tag.innerText = "有菜未上";
             }
 
@@ -801,31 +1562,32 @@
 
             order.items.forEach((item, index) => {
                 const itemDiv = document.createElement("div");
-                itemDiv.className = "flex items-center justify-between pb-3.5 border-b border-slate-50";
+                itemDiv.className = "modal-item";
                 
-                let statusBadge = "", statusClasses = "text-slate-800";
+                let badge = "";
+                let nameStyle = "font-weight: 700; color: #1e293b;";
                 if (item.status === 'served') {
-                    statusBadge = `<span class="bg-emerald-50 text-emerald-700 text-[10px] font-semibold px-1.5 py-0.5 rounded border border-emerald-100">已上</span>`;
-                    statusClasses = "text-slate-400 line-through";
+                    badge = `<span class="status-pill status-served" style="font-size: 9px; padding: 1px 4px;">已上</span>`;
+                    nameStyle = "color: #94a3b8; text-decoration: line-through;";
                 } else if (item.status === 'canceled') {
-                    statusBadge = `<span class="bg-rose-50 text-rose-600 text-[10px] font-semibold px-1.5 py-0.5 rounded border border-rose-100">取消</span>`;
-                    statusClasses = "text-slate-400 line-through";
+                    badge = `<span class="status-pill status-cooking" style="background-color: #fee2e2; color: #ef4444; font-size: 9px; padding: 1px 4px;">取消</span>`;
+                    nameStyle = "color: #94a3b8; text-decoration: line-through;";
                 } else {
-                    statusBadge = `<span class="bg-amber-50 text-amber-700 text-[10px] font-semibold px-1.5 py-0.5 rounded border border-amber-100">做菜中</span>`;
+                    badge = `<span class="status-pill status-cooking" style="font-size: 9px; padding: 1px 4px;">制作中</span>`;
                 }
 
                 itemDiv.innerHTML = `
-                    <div class="space-y-1">
-                        <div class="flex items-center gap-2">
-                            <span class="font-bold text-sm ${statusClasses}">${item.name}</span>
-                            ${statusBadge}
+                    <div class="modal-item-left">
+                        <div style="display: flex; align-items: center; gap: 6px;">
+                            <span style="${nameStyle}">${item.name}</span>
+                            ${badge}
                         </div>
-                        <p class="text-xs text-slate-400">单价 ¥${item.price} / 数量 ${item.qty} ${item.unit}</p>
+                        <span class="modal-item-price">单价 ¥${item.price} / 数量 ${item.qty} ${item.unit}</span>
                     </div>
-                    <div class="flex items-center gap-2">
+                    <div class="modal-item-right">
                         ${(isKitchen && item.status === 'cooking') ? `
-                            <button onclick="markItemStatus('${order.id}', ${index}, 'served')" class="bg-emerald-500 text-white text-xs font-semibold px-2.5 py-1.5 rounded-lg tap-feedback flex items-center gap-1"><i data-lucide="check" class="w-3.5 h-3.5"></i>上菜</button>
-                            <button onclick="markItemStatus('${order.id}', ${index}, 'canceled')" class="bg-rose-100 text-rose-700 text-xs font-semibold px-2.5 py-1.5 rounded-lg tap-feedback flex items-center gap-1"><i data-lucide="ban" class="w-3.5 h-3.5"></i>取消</button>
+                            <button onclick="markItemStatus('${order.id}', ${index}, 'served')" class="action-sm-btn action-btn-green tap-feedback"><i data-lucide="check" style="width: 12px; height: 12px;"></i>上菜</button>
+                            <button onclick="markItemStatus('${order.id}', ${index}, 'canceled')" class="action-sm-btn action-btn-red tap-feedback" style="background-color: #fee2e2; color: #ef4444;"><i data-lucide="ban" style="width: 12px; height: 12px;"></i>取消</button>
                         ` : ''}
                     </div>
                 `;
@@ -840,21 +1602,32 @@
                 const isReadyToBill = order.items.every(item => item.status === 'served' || item.status === 'canceled');
                 const btn = document.createElement("button");
                 btn.onclick = () => performCheckout(order.id);
-                btn.className = "w-full text-white font-bold py-4 rounded-xl shadow-lg flex items-center justify-center gap-2 tap-feedback transition-colors";
+                btn.style.width = "100%";
+                btn.style.color = "#ffffff";
+                btn.style.border = "none";
+                btn.style.borderRadius = "12px";
+                btn.style.padding = "14px";
+                btn.style.fontWeight = "700";
+                btn.style.cursor = "pointer";
+                btn.style.display = "flex";
+                btn.style.alignItems = "center";
+                btn.style.justifyContent = "center";
+                btn.style.gap = "8px";
+                btn.className = "tap-feedback";
                 
                 if (isReadyToBill) {
-                    btn.classList.add("bg-emerald-600", "hover:bg-emerald-700");
-                    btn.innerHTML = `<i data-lucide="wallet" class="w-4 h-4"></i>完成上菜·买单结账 (¥${totalAmt})`;
+                    btn.style.backgroundColor = "#22c55e";
+                    btn.innerHTML = `<i data-lucide="wallet" style="width: 16px; height: 16px;"></i>完成上菜·买单结账 (¥${totalAmt})`;
                 } else {
-                    btn.classList.add("bg-rose-500", "hover:bg-rose-600");
-                    btn.innerHTML = `<i data-lucide="alert-triangle" class="w-4 h-4"></i>未上齐菜·强制买单 (¥${totalAmt})`;
+                    btn.style.backgroundColor = "#ef4444";
+                    btn.innerHTML = `<i data-lucide="alert-triangle" style="width: 16px; height: 16px;"></i>未上齐菜·强制买单 (¥${totalAmt})`;
                 }
                 footerContainer.appendChild(btn);
             } else {
                 footerContainer.innerHTML = `
-                    <div class="flex items-center justify-between text-sm py-1">
-                        <span class="text-slate-500">实付金额:</span>
-                        <span class="text-lg font-black text-emerald-700">¥${calcOrderTotal(order)}</span>
+                    <div style="display: flex; align-items: center; justify-content: space-between; width: 100%; font-size: 13px; font-weight: 700;">
+                        <span style="color: #64748b;">实付金额:</span>
+                        <span style="font-size: 18px; font-weight: 900; color: #15803d;">¥${calcOrderTotal(order)}</span>
                     </div>
                 `;
             }
@@ -893,9 +1666,9 @@
 
             if (historyOrders.length === 0) {
                 container.innerHTML = `
-                    <div class="flex flex-col items-center justify-center py-20 text-slate-400 bg-white rounded-2xl border border-slate-100">
-                        <i data-lucide="history" class="w-14 h-14 stroke-[1.2] mb-3 text-slate-300"></i>
-                        <span class="text-sm">暂无任何历史已结账账单</span>
+                    <div style="text-align: center; padding: 48px 0; color: #94a3b8; background-color: #ffffff; border-radius: 16px; border: 1px dashed #e2e8f0; display: flex; flex-direction: column; align-items: center; gap: 10px;">
+                        <i data-lucide="history" style="width: 48px; height: 48px;"></i>
+                        <span style="font-size: 13px;">暂无已结账的历史账单</span>
                     </div>
                 `;
                 document.getElementById("history-total-info").innerText = "共 0 笔历史";
@@ -911,18 +1684,18 @@
 
                 const card = document.createElement("div");
                 card.onclick = () => openOrderDetail(order.id, 'history');
-                card.className = "bg-white border border-slate-100 hover:border-slate-300 rounded-2xl p-4 shadow-sm flex items-center justify-between cursor-pointer tap-feedback transition-all";
+                card.className = "order-card card-shadow";
                 card.innerHTML = `
-                    <div class="space-y-1 max-w-[70%]">
-                        <div class="flex items-center gap-2">
-                            <span class="font-extrabold text-slate-900 text-sm">${order.tableNo} 号桌</span>
-                            <span class="bg-slate-100 text-slate-600 text-[9px] font-bold px-1.5 py-0.5 rounded">已结账</span>
+                    <div class="order-card-left">
+                        <div class="order-card-header">
+                            <span class="order-table-title">${order.tableNo} 号桌</span>
+                            <span class="status-pill" style="background-color: #f1f5f9; color: #475569;">已结账</span>
                         </div>
-                        <p class="text-xs text-slate-400 truncate">${itemsStr}</p>
+                        <p class="order-items-snippet">${itemsStr}</p>
+                        <p class="order-time">${order.timestamp}</p>
                     </div>
-                    <div class="text-right">
-                        <p class="text-sm font-black text-emerald-700">¥${totalAmt}</p>
-                        <p class="text-[9px] text-slate-400 mt-0.5">${order.timestamp}</p>
+                    <div class="order-card-right">
+                        <span class="order-price">¥${totalAmt}</span>
                     </div>
                 `;
                 container.appendChild(card);
@@ -941,23 +1714,22 @@
             const input = document.getElementById("admin-password-input");
             if (show) {
                 input.value = "";
-                modal.classList.remove("hidden");
-                setTimeout(() => content.classList.remove("scale-95"), 10);
+                modal.style.display = "flex";
+                setTimeout(() => content.style.transform = "scale(1)", 10);
             } else {
-                content.classList.add("scale-95");
-                setTimeout(() => modal.classList.add("hidden"), 200);
+                content.style.transform = "scale(0.95)";
+                setTimeout(() => modal.style.display = "none", 200);
             }
         }
 
         function verifyAndClearHistory() {
             const inputVal = document.getElementById("admin-password-input").value;
-            // 验证密码（匹配配置区域变量）
             if (inputVal === ADMIN_PASSWORD) {
                 historyOrders = [];
                 localStorage.setItem("kitchen_history_orders", JSON.stringify([]));
                 renderHistoryPage();
                 togglePasswordModal(false);
-                showToast("🗑️ 历史账单已安全抹除！");
+                showToast("🗑️ 历史账单已安全清空！");
             } else {
                 showToast("❌ 密码错误，无权清空历史数据！");
             }
@@ -988,20 +1760,20 @@
             container.innerHTML = "";
 
             if (sortedItems.length === 0) {
-                container.innerHTML = `<div class="text-center py-10 text-xs text-slate-400">暂无历史结账数据，无法进行销量统计</div>`;
+                container.innerHTML = `<div style="text-align: center; padding: 32px 0; font-size: 12px; color: #94a3b8;">暂无历史结账数据，无法销量统计</div>`;
                 return;
             }
 
             sortedItems.forEach(item => {
                 const subtotal = (item.price * item.qty).toFixed(1);
                 const div = document.createElement("div");
-                div.className = "flex items-center justify-between pb-2 border-b border-slate-50";
+                div.className = "rank-item";
                 div.innerHTML = `
-                    <div class="space-y-0.5">
-                        <span class="text-xs font-bold text-slate-800">${item.name}</span>
-                        <p class="text-[10px] text-slate-400">单价 ¥${item.price} / 累计销售额 ¥${subtotal}</p>
+                    <div class="rank-item-info">
+                        <h5>${item.name}</h5>
+                        <p>单价 ¥${item.price} / 累计额 ¥${subtotal}</p>
                     </div>
-                    <span class="bg-amber-100 text-amber-800 text-xs font-bold px-2 py-1 rounded-lg">已售 ${item.qty} ${item.unit}</span>
+                    <span class="rank-item-qty">已售 ${item.qty} ${item.unit}</span>
                 `;
                 container.appendChild(div);
             });
@@ -1019,7 +1791,7 @@
                 });
             });
 
-            // ⚠️ 导出格式：[价格][菜名]：[数量][单位]
+            // 导出格式：[价格][菜名]：[数量][单位]
             let outputLines = [];
             Object.keys(itemCounts).forEach(name => {
                 const price = itemCounts[name].price;
@@ -1030,13 +1802,13 @@
 
             const outputText = outputLines.join("\n");
             document.getElementById("export-text-area").value = outputText || "暂无历史销量数据";
-            document.getElementById("export-modal").classList.remove("hidden");
+            document.getElementById("export-modal").style.display = "flex";
         }
 
         function toggleExportModal(show) {
             const modal = document.getElementById("export-modal");
-            if (show) modal.classList.remove("hidden");
-            else modal.classList.add("hidden");
+            if (show) modal.style.display = "flex";
+            else modal.style.display = "none";
         }
 
         function copyExportText() {
@@ -1056,9 +1828,9 @@
             const badge = document.getElementById("badge-kitchen-count");
             if (count > 0) {
                 badge.innerText = count;
-                badge.classList.remove("hidden");
+                badge.style.display = "inline-block";
             } else {
-                badge.classList.add("hidden");
+                badge.style.display = "none";
             }
         }
     </script>
